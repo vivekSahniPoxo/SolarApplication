@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">SolarApplication</string>
+    <string name="TriggerText">Tap to Read</string>
 </resources>
