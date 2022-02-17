@@ -27,17 +27,19 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/configuresoloa" />
+
         <TextView
             android:id="@+id/textView34"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
-            android:text="Dashboard"
-            android:textColor="@color/white"
-            android:textStyle="bold"
+            android:layout_marginEnd="32dp"
             android:fontFamily="sans-serif"
+            android:text="Dashboard"
             android:textAlignment="center"
+            android:textColor="@color/white"
             android:textSize="25dp"
+            android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/_Setting"
             app:layout_constraintStart_toStartOf="parent"

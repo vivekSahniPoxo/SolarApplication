@@ -36,15 +36,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 startActivity(new Intent(MainActivity.this, ReadTag.class));
                 break;
             case R.id.Write_tab:
-                Toast.makeText(MainActivity.this, "Write Tag", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(MainActivity.this, WriteTag.class));
                 break;
             case R.id.Configure_Tab:
-                Toast.makeText(MainActivity.this, "Configure Tag", Toast.LENGTH_SHORT).show();
-
+                startActivity(new Intent(MainActivity.this, ConfigureForm.class));
                 break;
             case R.id.Setting_tab:
-                Toast.makeText(MainActivity.this, "Setting Tag", Toast.LENGTH_SHORT).show();
-
+                startActivity(new Intent(MainActivity.this, SettingForm.class));
                 break;
         }
     }
