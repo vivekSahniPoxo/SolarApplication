@@ -1,0 +1,302 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CompanySettings>
+  <Company>
+    <ID>1</ID>
+    <PVModule>250W</PVModule>
+    <Warranty>25</Warranty>
+    <PVMName>Test</PVMName>
+    <PVCountry>India</PVCountry>
+    <PVDate>2019-06-23</PVDate>
+    <CellMName>TestCellName</CellMName>
+    <CellCountry>India</CellCountry>
+    <CellDate>2019-06-23</CellDate>
+    <IECLab>IEC</IECLab>
+    <IECDate>2019-06-23</IECDate>
+  </Company>
+  <Company>
+    <ID>2</ID>
+    <PVModule>7W</PVModule>
+    <Warranty>25</Warranty>
+    <PVMName>Test2</PVMName>
+    <PVCountry>China</PVCountry>
+    <PVDate>2019-06-23</PVDate>
+    <CellMName>TestCellName</CellMName>
+    <CellCountry>India</CellCountry>
+    <CellDate>2019-06-23</CellDate>
+    <IECLab>Test2</IECLab>
+    <IECDate>2019-06-23</IECDate>
+  </Company>
+  <Company>
+    <ID>3</ID>
+    <PVModule>300W</PVModule>
+    <Warranty>25</Warranty>
+    <PVMName>Test3</PVMName>
+    <PVCountry>Germany</PVCountry>
+    <PVDate>23-Jun-19</PVDate>
+    <CellMName>TestCellName</CellMName>
+    <CellCountry>China</CellCountry>
+    <CellDate>23-Jun-19</CellDate>
+    <IECLab>TUV</IECLab>
+    <IECDate>23-Jun-19</IECDate>
+  </Company>
+  <Company>
+    <ID>6</ID>
+    <PVModule>320W</PVModule>
+    <Warranty>25</Warranty>
+    <PVMName>POXO</PVMName>
+    <PVCountry>India</PVCountry>
+    <PVDate>07/2021</PVDate>
+    <CellMName>India</CellMName>
+    <CellCountry>India</CellCountry>
+    <CellDate>2020-12-12</CellDate>
+    <IECLab>2020-09-09</IECLab>
+    <IECDate>IEC</IECDate>
+  </Company>
+  <Company>
+    <ID>7</ID>
+    <PVModule>320W</PVModule>
+    <Warranty>25</Warranty>
+    <PVMName>POXO</PVMName>
+    <PVCountry>India</PVCountry>
+    <PVDate>07/2021</PVDate>
+    <CellMName>India</CellMName>
+    <CellCountry>India</CellCountry>
+    <CellDate>2020-12-12</CellDate>
+    <IECLab>2020-09-09</IECLab>
+    <IECDate>IEC</IECDate>
+  </Company>
+  <Company>
+    <ID>8</ID>
+    <PVModule>320W</PVModule>
+    <Warranty>25</Warranty>
+    <PVMName>POXO</PVMName>
+    <PVCountry>India</PVCountry>
+    <PVDate>07/2021</PVDate>
+    <CellMName>India</CellMName>
+    <CellCountry>India</CellCountry>
+    <CellDate>2020-12-12</CellDate>
+    <IECLab>2020-09-09</IECLab>
+    <IECDate>IEC</IECDate>
+  </Company>
+  <Company>
+    <ID>9</ID>
+    <PVModule>320W</PVModule>
+    <Warranty>25</Warranty>
+    <PVMName>POXO</PVMName>
+    <PVCountry>India</PVCountry>
+    <PVDate>07/2021</PVDate>
+    <CellMName>India</CellMName>
+    <CellCountry>India</CellCountry>
+    <CellDate>2020-12-12</CellDate>
+    <IECLab>2020-09-09</IECLab>
+    <IECDate>IEC</IECDate>
+  </Company>
+  <Company>
+    <ID>10</ID>
+    <PVModule>320W</PVModule>
+    <Warranty>25</Warranty>
+    <PVMName>POXO</PVMName>
+    <PVCountry>India</PVCountry>
+    <PVDate>07/2021</PVDate>
+    <CellMName>India</CellMName>
+    <CellCountry>India</CellCountry>
+    <CellDate>2020-12-12</CellDate>
+    <IECLab>2020-09-09</IECLab>
+    <IECDate>IEC</IECDate>
+  </Company>
+  <Company>
+    <ID>12</ID>
+    <PVModule>320W</PVModule>
+    <Warranty>25</Warranty>
+    <PVMName>POXO</PVMName>
+    <PVCountry>India</PVCountry>
+    <PVDate>07/2021</PVDate>
+    <CellMName>India</CellMName>
+    <CellCountry>India</CellCountry>
+    <CellDate>2020-12-12</CellDate>
+    <IECLab>2020-09-09</IECLab>
+    <IECDate>IEC</IECDate>
+  </Company>
+  <Company>
+    <ID>13</ID>
+    <PVModule>320W</PVModule>
+    <Warranty>25</Warranty>
+    <PVMName>POXO</PVMName>
+    <PVCountry>India</PVCountry>
+    <PVDate>07/2021</PVDate>
+    <CellMName>India</CellMName>
+    <CellCountry>India</CellCountry>
+    <CellDate>2020-12-12</CellDate>
+    <IECLab>2020-09-09</IECLab>
+    <IECDate>IEC</IECDate>
+  </Company>
+  <Company>
+    <ID>14</ID>
+    <PVModule>320W</PVModule>
+    <Warranty>25</Warranty>
+    <PVMName>POXO</PVMName>
+    <PVCountry>India</PVCountry>
+    <PVDate>07/2021</PVDate>
+    <CellMName>India</CellMName>
+    <CellCountry>India</CellCountry>
+    <CellDate>2020-12-12</CellDate>
+    <IECLab>2020-09-09</IECLab>
+    <IECDate>IEC</IECDate>
+  </Company>
+  <Company>
+    <ID>15</ID>
+    <PVModule>320W</PVModule>
+    <Warranty>25</Warranty>
+    <PVMName>POXO</PVMName>
+    <PVCountry>India</PVCountry>
+    <PVDate>07/2021</PVDate>
+    <CellMName>India</CellMName>
+    <CellCountry>India</CellCountry>
+    <CellDate>2020-12-12</CellDate>
+    <IECLab>2020-09-09</IECLab>
+    <IECDate>IEC</IECDate>
+  </Company>
+  <Company>
+    <ID>16</ID>
+    <PVModule>320W</PVModule>
+    <Warranty>25</Warranty>
+    <PVMName>POXO</PVMName>
+    <PVCountry>India</PVCountry>
+    <PVDate>07/2021</PVDate>
+    <CellMName>India</CellMName>
+    <CellCountry>India</CellCountry>
+    <CellDate>2020-12-12</CellDate>
+    <IECLab>2020-09-09</IECLab>
+    <IECDate>IEC</IECDate>
+  </Company>
+  <Company>
+    <ID>17</ID>
+    <PVModule>PIX MP3 72 395</PVModule>
+    <Warranty>25</Warranty>
+    <PVMName>PIXON</PVMName>
+    <PVCountry>India</PVCountry>
+    <PVDate>09/2021</PVDate>
+    <CellMName>URE MONO PREC</CellMName>
+    <CellCountry>China</CellCountry>
+    <CellDate>2021-08-08</CellDate>
+    <IECLab>TUV Rheinland</IECLab>
+    <IECDate>2021-03-03</IECDate>
+  </Company>
+  <Company>
+    <ID>18</ID>
+    <PVModule>PIX MP3 72 395</PVModule>
+    <Warranty>25</Warranty>
+    <PVMName>PIXON</PVMName>
+    <PVCountry>India</PVCountry>
+    <PVDate>09/2021</PVDate>
+    <CellMName>URE MONO PREC</CellMName>
+    <CellCountry>China</CellCountry>
+    <CellDate>2021-08-08</CellDate>
+    <IECLab>TUV Rheinland</IECLab>
+    <IECDate>2021-03-03</IECDate>
+  </Company>
+  <Company>
+    <ID>19</ID>
+    <PVModule>PIX MP3 72 395</PVModule>
+    <Warranty>25</Warranty>
+    <PVMName>PIXON</PVMName>
+    <PVCountry>India</PVCountry>
+    <PVDate>09/2021</PVDate>
+    <CellMName>URE MONO PREC</CellMName>
+    <CellCountry>China</CellCountry>
+    <CellDate>2021-08-08</CellDate>
+    <IECLab>TUV Rheinland</IECLab>
+    <IECDate>2021-03-03</IECDate>
+  </Company>
+  <Company>
+    <ID>20</ID>
+    <PVModule>PIX MP3 72 395</PVModule>
+    <Warranty>25</Warranty>
+    <PVMName>PIXON</PVMName>
+    <PVCountry>India</PVCountry>
+    <PVDate>09/2021</PVDate>
+    <CellMName>URE MONO PREC</CellMName>
+    <CellCountry>China</CellCountry>
+    <CellDate>2021-08-08</CellDate>
+    <IECLab>TUV Rheinland</IECLab>
+    <IECDate>2021-03-03</IECDate>
+  </Company>
+  <Company>
+    <ID>21</ID>
+    <PVModule>PIX MP3 72 395</PVModule>
+    <Warranty>25</Warranty>
+    <PVMName>PIXON</PVMName>
+    <PVCountry>India</PVCountry>
+    <PVDate>09/2021</PVDate>
+    <CellMName>URE MONO PREC</CellMName>
+    <CellCountry>China</CellCountry>
+    <CellDate>2021-08-08</CellDate>
+    <IECLab>TUV Rheinland</IECLab>
+    <IECDate>2021-03-03</IECDate>
+  </Company>
+  <Company>
+    <ID>22</ID>
+    <PVModule>PIX MP3 72 395</PVModule>
+    <Warranty>25</Warranty>
+    <PVMName>PIXON</PVMName>
+    <PVCountry>India</PVCountry>
+    <PVDate>09/2021</PVDate>
+    <CellMName>URE MONO PREC</CellMName>
+    <CellCountry>China</CellCountry>
+    <CellDate>2021-08-08</CellDate>
+    <IECLab>TUV Rheinland</IECLab>
+    <IECDate>2021-03-03</IECDate>
+  </Company>
+  <Company>
+    <ID>23</ID>
+    <PVModule>PIX MP3 72 395</PVModule>
+    <Warranty>25</Warranty>
+    <PVMName>PIXON</PVMName>
+    <PVCountry>India</PVCountry>
+    <PVDate>09/2021</PVDate>
+    <CellMName>URE MONO PREC</CellMName>
+    <CellCountry>China</CellCountry>
+    <CellDate>2021-08-08</CellDate>
+    <IECLab>TUV Rheinland</IECLab>
+    <IECDate>2021-03-03</IECDate>
+  </Company>
+  <Company>
+    <ID>24</ID>
+    <PVModule>PIX MP3 72 395</PVModule>
+    <Warranty>25</Warranty>
+    <PVMName>PIXON</PVMName>
+    <PVCountry>India</PVCountry>
+    <PVDate>09/2021</PVDate>
+    <CellMName>URE MONO PREC</CellMName>
+    <CellCountry>China</CellCountry>
+    <CellDate>2021-08-08</CellDate>
+    <IECLab>TUV Rheinland</IECLab>
+    <IECDate>2021-03-03</IECDate>
+  </Company>
+  <Company>
+    <ID>25</ID>
+    <PVModule>PIX MP3 72 395</PVModule>
+    <Warranty>25</Warranty>
+    <PVMName>PIXON</PVMName>
+    <PVCountry>India</PVCountry>
+    <PVDate>09/2021</PVDate>
+    <CellMName>URE MONO PREC</CellMName>
+    <CellCountry>China</CellCountry>
+    <CellDate>2021-08-08</CellDate>
+    <IECLab>TUV Rheinland</IECLab>
+    <IECDate>2021-03-03</IECDate>
+  </Company>
+  <Company>
+    <ID>26</ID>
+    <PVModule>PIX MP3 72 395</PVModule>
+    <Warranty>25</Warranty>
+    <PVMName>PIXON</PVMName>
+    <PVCountry>India</PVCountry>
+    <PVDate>09/2021</PVDate>
+    <CellMName>URE MONO PREC</CellMName>
+    <CellCountry>China</CellCountry>
+    <CellDate>2021-08-08</CellDate>
+    <IECLab>TUV Rheinland</IECLab>
+    <IECDate>2021-03-03</IECDate>
+  </Company>
+</CompanySettings>

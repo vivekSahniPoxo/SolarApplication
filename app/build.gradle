@@ -37,5 +37,16 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 
 //    implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
-    implementation 'com.jjoe64:graphview:4.2.1'
+//    implementation 'com.jjoe64:graphview:4.2.1'
+//    implementation 'com.github.PhilJay:MPAndroidChart:v3.0.3'
+    implementation 'com.jjoe64:graphview:4.2.2'
+//  Generate Excel File
+    implementation "org.apache.poi:poi:4.1.0"
+    implementation "org.apache.poi:poi-ooxml:4.1.0"
+    //Spread Tag
+    implementation 'com.github.speedatag:uhf:7.8.7'
+    implementation 'com.github.SpeedataG:Device:1.6.7'
+    implementation 'com.github.anastr:speedviewlib:1.6.0'
+    implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0-alpha'
+
 }
