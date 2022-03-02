@@ -40,6 +40,7 @@ dependencies {
 //    implementation 'com.jjoe64:graphview:4.2.1'
 //    implementation 'com.github.PhilJay:MPAndroidChart:v3.0.3'
     implementation 'com.jjoe64:graphview:4.2.2'
+    implementation 'com.itextpdf:itextpdf:5.5.4'
 //  Generate Excel File
     implementation "org.apache.poi:poi:4.1.0"
     implementation "org.apache.poi:poi-ooxml:4.1.0"
@@ -47,6 +48,11 @@ dependencies {
     implementation 'com.github.speedatag:uhf:7.8.7'
     implementation 'com.github.SpeedataG:Device:1.6.7'
     implementation 'com.github.anastr:speedviewlib:1.6.0'
+    //Graph and PDF
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0-alpha'
+
+    //Network Library
+    implementation 'com.android.volley:volley:1.2.1'
+
 
 }
