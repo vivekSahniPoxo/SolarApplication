@@ -67,7 +67,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -326,11 +325,6 @@ public class ReadTag extends AppCompatActivity {
         iuhfService.inventory_start();
         // Calling Method For Getting the Data OF Card
         int readArea = iuhfService.readArea(3, 0, 32, "00000000");
-    }
-
-
-    public String toHex(String arg) {
-        return String.format("%040x", new BigInteger(1, arg.getBytes(/*YOUR_CHARSET?*/)));
     }
 
     private void PopulateGraphValue(double Vpm, double Ipm, double Voc, double Isc) {

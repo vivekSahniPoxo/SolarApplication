@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">SolarApplication</string>
     <string name="TriggerText">Tap to Read</string>
-    <string name="Heading"> <u>Records</u></string>
+    <string name="Heading"> Records</string>
+    <string name="HeadGraph">Written Data in Tag </string>
 </resources>
