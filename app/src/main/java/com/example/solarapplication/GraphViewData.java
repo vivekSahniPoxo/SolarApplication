@@ -39,7 +39,7 @@ public class GraphViewData extends AppCompatActivity {
         readLists=new ArrayList<>();
 
         linegraph = findViewById(R.id.line_graph);
-//        ReadData();
+        ReadData();
     }
 
     //Read RFID TAg

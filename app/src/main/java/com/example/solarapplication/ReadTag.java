@@ -30,7 +30,6 @@ import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 
 import com.android.volley.AuthFailureError;
-import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -49,6 +48,7 @@ import com.speedata.libuhf.UHFManager;
 import com.speedata.libuhf.bean.SpdInventoryData;
 import com.speedata.libuhf.interfaces.OnSpdInventoryListener;
 
+import org.apache.commons.codec.binary.Hex;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -109,7 +109,11 @@ public class ReadTag extends AppCompatActivity {
         PdfGenerate = findViewById(R.id.GeneratePDf);
         ExcelGenerate = findViewById(R.id.GenerateExcel);
         iuhfService = UHFManager.getUHFService(this);
-
+        try {
+            FetchData();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         iuhfService.openDev();
         iuhfService.inventoryStart();
         iuhfService.setOnInventoryListener(new OnSpdInventoryListener() {
@@ -1002,18 +1006,19 @@ public class ReadTag extends AppCompatActivity {
 
     private void FetchData() throws JSONException {
 
-//        String url = "http://164.52.223.163:4501/api/storematerial/searchmaterial";
+        String url = "http://164.52.223.163:4502/api/GetbyId";
         JSONObject obj = new JSONObject();
         obj.put("serialNo", "A");
-        obj.put("moduleId", "22410949");
-        obj.put("formateid", "3");
+        obj.put("moduleId", "22410951");
+        obj.put("formateid", "1");
 
         RequestQueue queue = Volley.newRequestQueue(this);
 
 
         final String requestBody = obj.toString();
 
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, " ApiCLass.SearchMaterialID", response -> {
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, url, response -> {
+            Toast.makeText(ReadTag.this, "Successfully" + response, Toast.LENGTH_LONG).show();
 
             try {
                 JSONObject object = new JSONObject(response);
@@ -1038,6 +1043,11 @@ public class ReadTag extends AppCompatActivity {
                 String Irra = object1.getString("Irra");
                 String Binnumber = object1.getString("Bin number");
 
+
+                PopulateGraphValue(Double.parseDouble(Vmp.trim()),
+                        Double.parseDouble(Imp.trim()),
+                        Double.parseDouble(Voc.trim()),
+                        Double.parseDouble(Isc.trim()));
                 JSONArray companySettings = object.getJSONArray("companySettings_Information");
                 JSONObject object2 = companySettings.getJSONObject(0);
 
@@ -1053,23 +1063,22 @@ public class ReadTag extends AppCompatActivity {
                 String IECLab = object2.getString("IEC Lab");
 
 
-                Toast.makeText(ReadTag.this, response, Toast.LENGTH_LONG).show();
             } catch (JSONException e) {
                 e.printStackTrace();
             }
             Log.i("VOLLEY", response);
 //            dialog.dismiss();
         }, error -> {
-            Log.e("VOLLEY Negative", String.valueOf(error.networkResponse.statusCode));
-
-            if (error.networkResponse.statusCode == 404) {
-                Toast.makeText(ReadTag.this, "No Result Found", Toast.LENGTH_SHORT).show();
-            } else if (error.networkResponse.statusCode == 400) {
-                Toast.makeText(ReadTag.this, "Bad Request", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(ReadTag.this, "Unable to process the request", Toast.LENGTH_SHORT).show();
-
-            }
+//            Log.e("VOLLEY Negative", String.valueOf(error.networkResponse.statusCode));
+            Toast.makeText(ReadTag.this, "Error Message" + error.getMessage(), Toast.LENGTH_SHORT).show();
+//            if (error.networkResponse.statusCode == 404) {
+//                Toast.makeText(ReadTag.this, "No Result Found", Toast.LENGTH_SHORT).show();
+//            } else if (error.networkResponse.statusCode == 400) {
+//                Toast.makeText(ReadTag.this, "Bad Request", Toast.LENGTH_SHORT).show();
+//            } else {
+//                Toast.makeText(ReadTag.this, "Unable to process the request", Toast.LENGTH_SHORT).show();
+//
+//            }
         }) {
             @Override
             public String getBodyContentType() {
@@ -1092,9 +1101,10 @@ public class ReadTag extends AppCompatActivity {
                 return super.parseNetworkResponse(response);
             }
         };
-        stringRequest.setRetryPolicy(new DefaultRetryPolicy(5, 2,
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+//        stringRequest.setRetryPolicy(new DefaultRetryPolicy(5, 2,
+//                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         queue.add(stringRequest);
     }
+
 
 }

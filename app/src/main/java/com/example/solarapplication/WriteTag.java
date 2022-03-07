@@ -3,6 +3,7 @@ package com.example.solarapplication;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
@@ -11,15 +12,30 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkResponse;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.speedata.libuhf.IUHFService;
 import com.speedata.libuhf.UHFManager;
 import com.speedata.libuhf.bean.SpdWriteData;
 import com.speedata.libuhf.interfaces.OnSpdWriteListener;
 
+import org.apache.commons.codec.binary.Hex;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 
 public class WriteTag extends AppCompatActivity implements View.OnClickListener {
-    Button ViewGraph, ViewDetails;
+    Button ViewGraph, ViewDetails, SearchData;
     IUHFService iuhfService;
     EditText SerialInput;
     File filepath = new File(Environment.getExternalStorageDirectory() + "/SolarExcel.xls");
@@ -31,10 +47,14 @@ public class WriteTag extends AppCompatActivity implements View.OnClickListener 
 
         //Binding Components with Java File
         SerialInput = findViewById(R.id.SearchKey);
+
         ViewGraph = findViewById(R.id.ViewGraph);
         ViewDetails = findViewById(R.id.ViewAllData);
+        SearchData = findViewById(R.id.Search_Data);
+        SearchData.setOnClickListener(this::onClick);
         ViewGraph.setOnClickListener(this::onClick);
         ViewDetails.setOnClickListener(this::onClick);
+
 
         //RFID Module Initialize
         iuhfService = UHFManager.getUHFService(this);
@@ -47,17 +67,25 @@ public class WriteTag extends AppCompatActivity implements View.OnClickListener 
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.ViewAllData:
-                Toast.makeText(WriteTag.this, "View ALL DATA", Toast.LENGTH_SHORT).show();
+                convertStringToHex(SerialInput.getText().toString());
+//                Toast.makeText(WriteTag.this, "View ALL DATA", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.ViewGraph:
                 startActivity(new Intent(WriteTag.this, GraphViewData.class));
+                break;
+            case R.id.Search_Data:
+                try {
+                    FetchData(SerialInput.getText().toString().trim());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
         }
     }
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_F1) {//KeyEvent { action=ACTION_UP, keyCode=KEYCODE_F1, scanCode=59, metaState=0, flags=0x8, repeatCount=0, eventTime=13517236, downTime=13516959, deviceId=1, source=0x101 }
-            WriteData();
+//            WriteData();
             return true;
         }
         return super.onKeyUp(keyCode, event);
@@ -645,5 +673,137 @@ public class WriteTag extends AppCompatActivity implements View.OnClickListener 
 
 
         }
+    }
+
+    private void FetchData(String trim) throws JSONException {
+
+        String url = "http://164.52.223.163:4502/api/GetbyId";
+        JSONObject obj = new JSONObject();
+        obj.put("serialNo", "A");
+        obj.put("moduleId", trim);
+        obj.put("formateid", "1");
+
+        RequestQueue queue = Volley.newRequestQueue(this);
+
+
+        final String requestBody = obj.toString();
+//
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, url, response -> {
+
+            SerialInput.setText("");
+            try {
+                JSONObject object = new JSONObject(response);
+                JSONObject object1 = object.getJSONObject("technicleSettings_Information");
+//                JSONArray array = object1.
+
+//              String rd=object.getString("technicleSettings_Information");
+//              System.out.print("Value "+rd);
+
+//                JSONObject object1 = (JSONObject) technicleSettings.get(0);
+//                String SerialNo = object1.getString("Serial number");
+//                String date = object1.getString("date");
+//                String Pmaxnew = object1.getString("Pmax");
+//                String Time = object1.getString("time");
+//                String FillFactor = object1.getString("Fill Factor");
+//                String Voc = object1.getString("Voc");
+//                String Isc = object1.getString("Isc");
+//                String Vmp = object1.getString("Vmp");
+//                String Imp = object1.getString("Imp");
+//                String Rs = object1.getString("Rs");
+//                String Rsh = object1.getString("Rsh");
+//                String CEff = object1.getString("C.Eff");
+//                String MTemp = object1.getString("M.Temp");
+//                String RefVoltage = object1.getString("RefVoltage");
+//                String RefCurent = object1.getString("RefCurent");
+//                String RefPmax = object1.getString("RefPmax");
+//                String Irra = object1.getString("Irra");
+//                String Binnumber = object1.getString("Bin number");
+//                String JEX = toHex(SerialNo);
+//                System.out.print("VAP" + JEX);
+//                Toast.makeText(WriteTag.this, ""+Irra, Toast.LENGTH_SHORT).show();
+////                PopulateGraphValue( Double.parseDouble(Vmp.trim()),
+////                        Double.parseDouble(Imp.trim()),
+////                        Double.parseDouble(Voc.trim()),
+////                        Double.parseDouble(Isc.trim()));
+//                JSONArray companySettings = object.getJSONArray("companySettings_Information");
+//                JSONObject object2 = companySettings.getJSONObject(0);
+//
+//                String Sno = object2.getString("Sno");
+//                String ModuleID = object2.getString("Module ID");
+//                String PVMdlNumber = object2.getString("PV Model Number");
+//                String CellMfgName = object2.getString("Cell Mfg Name");
+//                String CellMfgCuntry = object2.getString("Cell Mfg Cuntry");
+//                String CellMfgDate = object2.getString("Cell Mfg Date");
+//                String ModuleMfg = object2.getString("Module Mfg");
+//                String ModuleMfgCountry = object2.getString("Module Mfg Country");
+//                String ModuleMfgDate = object2.getString("Module Mfg Date");
+//                String IECLab = object2.getString("IEC Lab");
+
+
+                Toast.makeText(WriteTag.this, response, Toast.LENGTH_LONG).show();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            Log.i("VOLLEY", response);
+//            dialog.dismiss();
+        }, error -> {
+            Toast.makeText(WriteTag.this, "" + error.getMessage(), Toast.LENGTH_SHORT).show();
+            SerialInput.setText("");
+        }) {
+            @Override
+            public String getBodyContentType() {
+                return "application/json; charset=utf-8";
+            }
+
+            @Override
+            public byte[] getBody() throws AuthFailureError {
+                try {
+                    return requestBody == null ? null : requestBody.getBytes("utf-8");
+                } catch (UnsupportedEncodingException uee) {
+                    VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", requestBody, "utf-8");
+                    return null;
+                }
+            }
+
+            @Override
+            protected Response<String> parseNetworkResponse(NetworkResponse response) {
+
+                return super.parseNetworkResponse(response);
+            }
+        };
+//        stringRequest.setRetryPolicy(new DefaultRetryPolicy(5, 2,
+//                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        queue.add(stringRequest);
+    }
+
+    public String toHex(String arg) {
+        return String.format("%x", new BigInteger(1, arg.getBytes()));
+    }
+
+    public static String convertStringToHex(String str) {
+        // display in lowercase, default
+        char[] chars = Hex.encodeHex(str.getBytes(StandardCharsets.UTF_8));
+
+        leadingZeros(String.valueOf(chars));
+        return String.valueOf(chars);
+
+    }
+
+    public static String leadingZeros(String s) {
+        String lemn;
+        if (s.length() >= 45) {
+            return s;
+        } else {
+             lemn = String.format("%0" + (45 - s.length()) + "d%s", 0, s);
+            System.out.print("Value of Length"+lemn);
+            DataFormatting(lemn);
+            return lemn;
+        }
+    }
+
+    public  static  void DataFormatting(String lemn)
+    {
+     String NewID=lemn.concat("000");
+     System.out.print("VALUE WITH ID"+NewID);
     }
 }
