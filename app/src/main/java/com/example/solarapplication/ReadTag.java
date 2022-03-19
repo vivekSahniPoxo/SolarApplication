@@ -15,7 +15,6 @@ import android.graphics.pdf.PdfDocument;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,14 +28,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.NetworkResponse;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyLog;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.DataPointInterface;
@@ -48,14 +39,10 @@ import com.speedata.libuhf.UHFManager;
 import com.speedata.libuhf.bean.SpdInventoryData;
 import com.speedata.libuhf.interfaces.OnSpdInventoryListener;
 
-import org.apache.commons.codec.binary.Hex;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -66,7 +53,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -109,11 +95,11 @@ public class ReadTag extends AppCompatActivity {
         PdfGenerate = findViewById(R.id.GeneratePDf);
         ExcelGenerate = findViewById(R.id.GenerateExcel);
         iuhfService = UHFManager.getUHFService(this);
-        try {
-            FetchData();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            FetchData();
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
         iuhfService.openDev();
         iuhfService.inventoryStart();
         iuhfService.setOnInventoryListener(new OnSpdInventoryListener() {
@@ -213,6 +199,7 @@ public class ReadTag extends AppCompatActivity {
         }
 //        System.out.print(hex);
         SetDAta(hex);
+//        SetDAta("00000000000000000000000000000032323431303936350003504839020898000774715095800000000000000000000000000000000000000000000000000000");
         System.out.print("VALUE OF DATA " + hex);
 
     }
@@ -239,11 +226,11 @@ public class ReadTag extends AppCompatActivity {
         String max2 = hex.substring(60, 62);
         IPMAx1 = IP + "." + max2;
         t5.setText(IPMAx1);
-        double F1 = Double.parseDouble(hex.substring(63, 65));
+        Integer F1 = Integer.parseInt(hex.substring(63, 65));
         String F2 = hex.substring(65, 67);
         FF = F1 + "." + F2;
         Integer VO = Integer.parseInt(hex.substring(67, 69));
-        String OC = hex.substring(65, 67);
+        String OC = hex.substring(69, 71);
         VOC1 = VO + "." + OC;
         Integer IS = Integer.parseInt(hex.substring(71, 73));
         String C = hex.substring(73, 75);
@@ -397,7 +384,7 @@ public class ReadTag extends AppCompatActivity {
         linegraph.addSeries(lineSeries);
         linegraph.getViewport().setMinX(0);
         linegraph.getViewport().setBackgroundColor(Color.parseColor("#C8E9E9"));
-        linegraph.getViewport().setMaxX(50);
+        linegraph.getViewport().setMaxX(60);
         linegraph.getViewport().setMinY(0);
         linegraph.getViewport().setMaxY(10);
         linegraph.getViewport().setYAxisBoundsManual(true);
@@ -410,7 +397,7 @@ public class ReadTag extends AppCompatActivity {
         lineSeries.setTitle("Current");
 //        lineSeries.setAnimated(true);
 
-        linegraph.getGridLabelRenderer().setPadding(20);
+        linegraph.getGridLabelRenderer().setPadding(50);
         linegraph.getGridLabelRenderer().setVerticalAxisTitle("Current (I)");
         linegraph.getGridLabelRenderer().setHorizontalAxisTitle("Voltage (V)");
         linegraph.getViewport().setScalable(true);
@@ -1003,108 +990,108 @@ public class ReadTag extends AppCompatActivity {
             }
         });
     }
-
-    private void FetchData() throws JSONException {
-
-        String url = "http://164.52.223.163:4502/api/GetbyId";
-        JSONObject obj = new JSONObject();
-        obj.put("serialNo", "A");
-        obj.put("moduleId", "22410951");
-        obj.put("formateid", "1");
-
-        RequestQueue queue = Volley.newRequestQueue(this);
-
-
-        final String requestBody = obj.toString();
-
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, url, response -> {
-            Toast.makeText(ReadTag.this, "Successfully" + response, Toast.LENGTH_LONG).show();
-
-            try {
-                JSONObject object = new JSONObject(response);
-                JSONArray technicleSettings = object.getJSONArray("technicleSettings_Information");
-                JSONObject object1 = (JSONObject) technicleSettings.get(0);
-                String SerialNo = object1.getString("Serial number");
-                String date = object1.getString("date");
-                String Pmaxnew = object1.getString("Pmax");
-                String Time = object1.getString("time");
-                String FillFactor = object1.getString("Fill Factor");
-                String Voc = object1.getString("Voc");
-                String Isc = object1.getString("Isc");
-                String Vmp = object1.getString("Vmp");
-                String Imp = object1.getString("Imp");
-                String Rs = object1.getString("Rs");
-                String Rsh = object1.getString("Rsh");
-                String CEff = object1.getString("C.Eff");
-                String MTemp = object1.getString("M.Temp");
-                String RefVoltage = object1.getString("RefVoltage");
-                String RefCurent = object1.getString("RefCurent");
-                String RefPmax = object1.getString("RefPmax");
-                String Irra = object1.getString("Irra");
-                String Binnumber = object1.getString("Bin number");
-
-
-                PopulateGraphValue(Double.parseDouble(Vmp.trim()),
-                        Double.parseDouble(Imp.trim()),
-                        Double.parseDouble(Voc.trim()),
-                        Double.parseDouble(Isc.trim()));
-                JSONArray companySettings = object.getJSONArray("companySettings_Information");
-                JSONObject object2 = companySettings.getJSONObject(0);
-
-                String Sno = object2.getString("Sno");
-                String ModuleID = object2.getString("Module ID");
-                String PVMdlNumber = object2.getString("PV Model Number");
-                String CellMfgName = object2.getString("Cell Mfg Name");
-                String CellMfgCuntry = object2.getString("Cell Mfg Cuntry");
-                String CellMfgDate = object2.getString("Cell Mfg Date");
-                String ModuleMfg = object2.getString("Module Mfg");
-                String ModuleMfgCountry = object2.getString("Module Mfg Country");
-                String ModuleMfgDate = object2.getString("Module Mfg Date");
-                String IECLab = object2.getString("IEC Lab");
-
-
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            Log.i("VOLLEY", response);
-//            dialog.dismiss();
-        }, error -> {
-//            Log.e("VOLLEY Negative", String.valueOf(error.networkResponse.statusCode));
-            Toast.makeText(ReadTag.this, "Error Message" + error.getMessage(), Toast.LENGTH_SHORT).show();
-//            if (error.networkResponse.statusCode == 404) {
-//                Toast.makeText(ReadTag.this, "No Result Found", Toast.LENGTH_SHORT).show();
-//            } else if (error.networkResponse.statusCode == 400) {
-//                Toast.makeText(ReadTag.this, "Bad Request", Toast.LENGTH_SHORT).show();
-//            } else {
-//                Toast.makeText(ReadTag.this, "Unable to process the request", Toast.LENGTH_SHORT).show();
 //
+//    private void FetchData() throws JSONException {
+//
+//        String url = "http://164.52.223.163:4502/api/GetbyId";
+//        JSONObject obj = new JSONObject();
+//        obj.put("serialNo", "A");
+//        obj.put("moduleId", "22410951");
+//        obj.put("formateid", "1");
+//
+//        RequestQueue queue = Volley.newRequestQueue(this);
+//
+//
+//        final String requestBody = obj.toString();
+//
+//        StringRequest stringRequest = new StringRequest(Request.Method.POST, url, response -> {
+//            Toast.makeText(ReadTag.this, "Successfully" + response, Toast.LENGTH_LONG).show();
+//
+//            try {
+//                JSONObject object = new JSONObject(response);
+//                JSONArray technicleSettings = object.getJSONArray("technicleSettings_Information");
+//                JSONObject object1 = (JSONObject) technicleSettings.get(0);
+//                String SerialNo = object1.getString("Serial number");
+//                String date = object1.getString("date");
+//                String Pmaxnew = object1.getString("Pmax");
+//                String Time = object1.getString("time");
+//                String FillFactor = object1.getString("Fill Factor");
+//                String Voc = object1.getString("Voc");
+//                String Isc = object1.getString("Isc");
+//                String Vmp = object1.getString("Vmp");
+//                String Imp = object1.getString("Imp");
+//                String Rs = object1.getString("Rs");
+//                String Rsh = object1.getString("Rsh");
+//                String CEff = object1.getString("C.Eff");
+//                String MTemp = object1.getString("M.Temp");
+//                String RefVoltage = object1.getString("RefVoltage");
+//                String RefCurent = object1.getString("RefCurent");
+//                String RefPmax = object1.getString("RefPmax");
+//                String Irra = object1.getString("Irra");
+//                String Binnumber = object1.getString("Bin number");
+//
+//
+//                PopulateGraphValue(Double.parseDouble(Vmp.trim()),
+//                        Double.parseDouble(Imp.trim()),
+//                        Double.parseDouble(Voc.trim()),
+//                        Double.parseDouble(Isc.trim()));
+//                JSONArray companySettings = object.getJSONArray("companySettings_Information");
+//                JSONObject object2 = companySettings.getJSONObject(0);
+//
+//                String Sno = object2.getString("Sno");
+//                String ModuleID = object2.getString("Module ID");
+//                String PVMdlNumber = object2.getString("PV Model Number");
+//                String CellMfgName = object2.getString("Cell Mfg Name");
+//                String CellMfgCuntry = object2.getString("Cell Mfg Cuntry");
+//                String CellMfgDate = object2.getString("Cell Mfg Date");
+//                String ModuleMfg = object2.getString("Module Mfg");
+//                String ModuleMfgCountry = object2.getString("Module Mfg Country");
+//                String ModuleMfgDate = object2.getString("Module Mfg Date");
+//                String IECLab = object2.getString("IEC Lab");
+//
+//
+//            } catch (JSONException e) {
+//                e.printStackTrace();
 //            }
-        }) {
-            @Override
-            public String getBodyContentType() {
-                return "application/json; charset=utf-8";
-            }
-
-            @Override
-            public byte[] getBody() throws AuthFailureError {
-                try {
-                    return requestBody == null ? null : requestBody.getBytes("utf-8");
-                } catch (UnsupportedEncodingException uee) {
-                    VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", requestBody, "utf-8");
-                    return null;
-                }
-            }
-
-            @Override
-            protected Response<String> parseNetworkResponse(NetworkResponse response) {
-
-                return super.parseNetworkResponse(response);
-            }
-        };
-//        stringRequest.setRetryPolicy(new DefaultRetryPolicy(5, 2,
-//                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-        queue.add(stringRequest);
-    }
+//            Log.i("VOLLEY", response);
+////            dialog.dismiss();
+//        }, error -> {
+////            Log.e("VOLLEY Negative", String.valueOf(error.networkResponse.statusCode));
+//            Toast.makeText(ReadTag.this, "Error Message" + error.getMessage(), Toast.LENGTH_SHORT).show();
+////            if (error.networkResponse.statusCode == 404) {
+////                Toast.makeText(ReadTag.this, "No Result Found", Toast.LENGTH_SHORT).show();
+////            } else if (error.networkResponse.statusCode == 400) {
+////                Toast.makeText(ReadTag.this, "Bad Request", Toast.LENGTH_SHORT).show();
+////            } else {
+////                Toast.makeText(ReadTag.this, "Unable to process the request", Toast.LENGTH_SHORT).show();
+////
+////            }
+//        }) {
+//            @Override
+//            public String getBodyContentType() {
+//                return "application/json; charset=utf-8";
+//            }
+//
+//            @Override
+//            public byte[] getBody() throws AuthFailureError {
+//                try {
+//                    return requestBody == null ? null : requestBody.getBytes("utf-8");
+//                } catch (UnsupportedEncodingException uee) {
+//                    VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", requestBody, "utf-8");
+//                    return null;
+//                }
+//            }
+//
+//            @Override
+//            protected Response<String> parseNetworkResponse(NetworkResponse response) {
+//
+//                return super.parseNetworkResponse(response);
+//            }
+//        };
+////        stringRequest.setRetryPolicy(new DefaultRetryPolicy(5, 2,
+////                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+//        queue.add(stringRequest);
+//    }
 
 
 }

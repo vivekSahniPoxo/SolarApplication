@@ -1,5 +1,6 @@
 package com.example.solarapplication;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
@@ -26,19 +27,29 @@ import com.speedata.libuhf.bean.SpdWriteData;
 import com.speedata.libuhf.interfaces.OnSpdWriteListener;
 
 import org.apache.commons.codec.binary.Hex;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+import java.util.StringTokenizer;
 
 public class WriteTag extends AppCompatActivity implements View.OnClickListener {
     Button ViewGraph, ViewDetails, SearchData;
     IUHFService iuhfService;
     EditText SerialInput;
-    File filepath = new File(Environment.getExternalStorageDirectory() + "/SolarExcel.xls");
+    String SerialNo = "", date, time, Pmaxnew, FillFactor, Voc, Isc, Vmp, Imp;
+    File filepath = new File(Environment.getExternalStorageDirectory() + "/SolarWriteTagExcel.xls");
+    WriteDataModel writeDataModel;
+    ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,10 +58,10 @@ public class WriteTag extends AppCompatActivity implements View.OnClickListener 
 
         //Binding Components with Java File
         SerialInput = findViewById(R.id.SearchKey);
-
         ViewGraph = findViewById(R.id.ViewGraph);
         ViewDetails = findViewById(R.id.ViewAllData);
         SearchData = findViewById(R.id.Search_Data);
+        progressDialog = new ProgressDialog(this);
         SearchData.setOnClickListener(this::onClick);
         ViewGraph.setOnClickListener(this::onClick);
         ViewDetails.setOnClickListener(this::onClick);
@@ -67,8 +78,12 @@ public class WriteTag extends AppCompatActivity implements View.OnClickListener 
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.ViewAllData:
-                convertStringToHex(SerialInput.getText().toString());
-//                Toast.makeText(WriteTag.this, "View ALL DATA", Toast.LENGTH_SHORT).show();
+//
+                if (SerialNo.length() == 0) {
+                    Toast.makeText(WriteTag.this, "Data Not Available for Excel", Toast.LENGTH_SHORT).show();
+                } else {
+                    createExcelSheet();
+                }
                 break;
             case R.id.ViewGraph:
                 startActivity(new Intent(WriteTag.this, GraphViewData.class));
@@ -76,6 +91,9 @@ public class WriteTag extends AppCompatActivity implements View.OnClickListener 
             case R.id.Search_Data:
                 try {
                     FetchData(SerialInput.getText().toString().trim());
+                    progressDialog.setCancelable(false);
+                    progressDialog.setMessage("Please wait While Writing Data...");
+                    progressDialog.show();
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -91,94 +109,78 @@ public class WriteTag extends AppCompatActivity implements View.OnClickListener 
         return super.onKeyUp(keyCode, event);
     }
 
-    public void WriteData() {
-        iuhfService.setOnWriteListener(new OnSpdWriteListener() {
-            @Override
-            public void getWriteData(SpdWriteData var1) {
-                System.out.print("Data Having " + var1.getStatus());
+
+    private void createExcelSheet() {
+        HSSFWorkbook hssfWorkbook = new HSSFWorkbook();
+        HSSFSheet hssfSheet = hssfWorkbook.createSheet();
+        HSSFRow row = hssfSheet.createRow(0);
+        HSSFRow row1 = hssfSheet.createRow(1);
+        HSSFCell cell = row.createCell(0);
+//        Row row = sheet.createRow(0);
+
+
+        cell = (HSSFCell) row.createCell(0);
+        cell.setCellValue("SerialNumber");
+//        cell.setCellStyle(cellStyle);
+
+        cell = (HSSFCell) row.createCell(1);
+        cell.setCellValue("Pmax");
+//        cell.setCellStyle(cellStyle);
+
+        cell = (HSSFCell) row.createCell(2);
+        cell.setCellValue("Vmax");
+//        cell.setCellStyle(cellStyle);
+
+        cell = (HSSFCell) row.createCell(3);
+        cell.setCellValue("Imax");
+        cell = (HSSFCell) row.createCell(4);
+        cell.setCellValue("Isc");
+        cell = (HSSFCell) row.createCell(5);
+        cell.setCellValue("VSC");
+//        cell.setCellStyle(cellStyle);
+        cell = (HSSFCell) row.createCell(6);
+        cell.setCellValue("FF");
+        //Value Here
+
+
+        cell = (HSSFCell) row1.createCell(0);
+        cell.setCellValue(SerialNo);
+//        cell.setCellStyle(cellStyle);
+
+        cell = (HSSFCell) row1.createCell(1);
+        cell.setCellValue(Pmaxnew);
+//        cell.setCellStyle(cellStyle);
+
+        cell = (HSSFCell) row1.createCell(2);
+        cell.setCellValue(Vmp);
+//        cell.setCellStyle(cellStyle);
+
+        cell = (HSSFCell) row1.createCell(3);
+        cell.setCellValue(Imp);
+        cell = (HSSFCell) row1.createCell(4);
+        cell.setCellValue(Isc);
+        cell = (HSSFCell) row1.createCell(5);
+        cell.setCellValue(Voc);
+//        cell.setCellStyle(cellStyle);
+        cell = (HSSFCell) row1.createCell(6);
+        cell.setCellValue(FillFactor);
+        try {
+            if (!filepath.exists()) {
+
+                filepath.createNewFile();
             }
-        });
-        iuhfService.inventory_start();
-        byte[] bytes = new byte[10];
-        String example = SerialInput.getText().toString().trim();
+            FileOutputStream fileOutputStream = new FileOutputStream(filepath);
+            hssfWorkbook.write(fileOutputStream);
+            if (fileOutputStream != null) {
+                Toast.makeText(WriteTag.this, "" + filepath, Toast.LENGTH_SHORT).show();
+                fileOutputStream.flush();
+                fileOutputStream.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
 
-        bytes = example.getBytes();
-        int readArea = iuhfService.writeArea(3, 0, 3, "00000000", bytes);//1 count = 2 character
-        System.out.print("Value" + readArea);
-        ErrorCode(readArea);
+        }
     }
-
-//    private void createExcelSheet() {
-//        HSSFWorkbook hssfWorkbook = new HSSFWorkbook();
-//        HSSFSheet hssfSheet = hssfWorkbook.createSheet();
-//        HSSFRow row = hssfSheet.createRow(0);
-//        HSSFRow row1 = hssfSheet.createRow(1);
-//        HSSFCell cell = row.createCell(0);
-////        Row row = sheet.createRow(0);
-//
-//
-//        cell = (HSSFCell) row.createCell(0);
-//        cell.setCellValue("SerialNumber");
-////        cell.setCellStyle(cellStyle);
-//
-//        cell = (HSSFCell) row.createCell(1);
-//        cell.setCellValue("Pmax");
-////        cell.setCellStyle(cellStyle);
-//
-//        cell = (HSSFCell) row.createCell(2);
-//        cell.setCellValue("Vmax");
-////        cell.setCellStyle(cellStyle);
-//
-//        cell = (HSSFCell) row.createCell(3);
-//        cell.setCellValue("Imax");
-//        cell = (HSSFCell) row.createCell(4);
-//        cell.setCellValue("Isc");
-//        cell = (HSSFCell) row.createCell(5);
-//        cell.setCellValue("VSC");
-////        cell.setCellStyle(cellStyle);
-//        cell = (HSSFCell) row.createCell(6);
-//        cell.setCellValue("FF");
-//        //Value Here
-//
-//
-//        cell = (HSSFCell) row1.createCell(0);
-//        cell.setCellValue(SerialId);
-////        cell.setCellStyle(cellStyle);
-//
-//        cell = (HSSFCell) row1.createCell(1);
-//        cell.setCellValue(pmax1);
-////        cell.setCellStyle(cellStyle);
-//
-//        cell = (HSSFCell) row1.createCell(2);
-//        cell.setCellValue(Vmax1);
-////        cell.setCellStyle(cellStyle);
-//
-//        cell = (HSSFCell) row1.createCell(3);
-//        cell.setCellValue(IPMAx1);
-//        cell = (HSSFCell) row1.createCell(4);
-//        cell.setCellValue(ISC1);
-//        cell = (HSSFCell) row1.createCell(5);
-//        cell.setCellValue(ISC1);
-////        cell.setCellStyle(cellStyle);
-//        cell = (HSSFCell) row1.createCell(6);
-//        cell.setCellValue(FF);
-//        try {
-//            if (!filepath.exists()) {
-//
-//                filepath.createNewFile();
-//            }
-//            FileOutputStream fileOutputStream = new FileOutputStream(filepath);
-//            hssfWorkbook.write(fileOutputStream);
-//            if (fileOutputStream != null) {
-//                Toast.makeText(WriteTag.this, "" + filepath, Toast.LENGTH_SHORT).show();
-//                fileOutputStream.flush();
-//                fileOutputStream.close();
-//            }
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//
-//        }
-//    }
 
 //    private void generatePDF() {
 //        PdfDocument pdfDocument = new PdfDocument();
@@ -655,19 +657,23 @@ public class WriteTag extends AppCompatActivity implements View.OnClickListener 
     public void ErrorCode(int ErrorCode) {
         switch (ErrorCode) {
             case 0:
+                progressDialog.dismiss();
                 Toast.makeText(WriteTag.this, "Writing Successfully...", Toast.LENGTH_SHORT).show();
                 break;
             case -1:
-//                dataEnter.setText("");
+                progressDialog.dismiss();
                 Toast.makeText(WriteTag.this, "Writing failure...", Toast.LENGTH_SHORT).show();
                 break;
             case -2:
+                progressDialog.dismiss();
                 Toast.makeText(WriteTag.this, "Incorrect content length", Toast.LENGTH_SHORT).show();
                 break;
             case -3:
+                progressDialog.dismiss();
                 Toast.makeText(WriteTag.this, " Invalid character", Toast.LENGTH_SHORT).show();
                 break;
             default:
+                progressDialog.dismiss();
                 Toast.makeText(WriteTag.this, "Writing Error ", Toast.LENGTH_SHORT).show();
                 break;
 
@@ -675,80 +681,101 @@ public class WriteTag extends AppCompatActivity implements View.OnClickListener 
         }
     }
 
-    private void FetchData(String trim) throws JSONException {
+    private void FetchData(String parameter) throws JSONException {
 
         String url = "http://164.52.223.163:4502/api/GetbyId";
         JSONObject obj = new JSONObject();
-        obj.put("serialNo", "A");
-        obj.put("moduleId", trim);
+        obj.put("serialNo", parameter);
+        obj.put("moduleId", parameter);
         obj.put("formateid", "1");
-
         RequestQueue queue = Volley.newRequestQueue(this);
 
 
         final String requestBody = obj.toString();
-//
+
         StringRequest stringRequest = new StringRequest(Request.Method.POST, url, response -> {
 
-            SerialInput.setText("");
             try {
+                SerialInput.setText("");
                 JSONObject object = new JSONObject(response);
-                JSONObject object1 = object.getJSONObject("technicleSettings_Information");
-//                JSONArray array = object1.
+                JSONObject technicleSettings_information = object.getJSONObject("technicleSettings_Information");
 
-//              String rd=object.getString("technicleSettings_Information");
-//              System.out.print("Value "+rd);
+                SerialNo = technicleSettings_information.getString("Serial number");
 
-//                JSONObject object1 = (JSONObject) technicleSettings.get(0);
-//                String SerialNo = object1.getString("Serial number");
-//                String date = object1.getString("date");
-//                String Pmaxnew = object1.getString("Pmax");
-//                String Time = object1.getString("time");
-//                String FillFactor = object1.getString("Fill Factor");
-//                String Voc = object1.getString("Voc");
-//                String Isc = object1.getString("Isc");
-//                String Vmp = object1.getString("Vmp");
-//                String Imp = object1.getString("Imp");
-//                String Rs = object1.getString("Rs");
-//                String Rsh = object1.getString("Rsh");
-//                String CEff = object1.getString("C.Eff");
-//                String MTemp = object1.getString("M.Temp");
-//                String RefVoltage = object1.getString("RefVoltage");
-//                String RefCurent = object1.getString("RefCurent");
-//                String RefPmax = object1.getString("RefPmax");
-//                String Irra = object1.getString("Irra");
-//                String Binnumber = object1.getString("Bin number");
-//                String JEX = toHex(SerialNo);
-//                System.out.print("VAP" + JEX);
-//                Toast.makeText(WriteTag.this, ""+Irra, Toast.LENGTH_SHORT).show();
+                date = technicleSettings_information.getString("date");
+                time = technicleSettings_information.getString("time");
+
+                //PMAX DECODING
+                Pmaxnew = technicleSettings_information.getString("pmax");
+
+
+                FillFactor = technicleSettings_information.getString("Fill Factor");
+
+
+                //Voc DECODING
+                Voc = technicleSettings_information.getString("voc");
+
+
+                //ISC Decoding
+                Isc = (technicleSettings_information.getString("isc"));
+
+
+                //Vmp Decoding
+                Vmp = (technicleSettings_information.getString("vmp"));
+
+
+                //Imp Decoding
+                Imp = (technicleSettings_information.getString("imp"));
+
+                String Rs = technicleSettings_information.getString("rs");
+                String Rsh = technicleSettings_information.getString("rsh");
+                String CEff = technicleSettings_information.getString("C.Eff");
+                String MTemp = technicleSettings_information.getString("M.Temp");
+                String RefVoltage = technicleSettings_information.getString("refvoltage");
+                String RefCurent = technicleSettings_information.getString("RefCurent");
+                String RefPmax = technicleSettings_information.getString("refpmax");
+                String Irra = technicleSettings_information.getString("irra");
+                String Binnumber = technicleSettings_information.getString("Bin number");
+
+
+                NEWDATA(SerialNo.trim(), Pmaxnew.trim(), Vmp.trim(), Imp.trim(), FillFactor.trim(), Voc.trim(), Isc.trim());
+//                String FilterData = PMAX.concat(VMP.concat(IMP.concat(FF.concat(VOC).concat(ISC))));
+
+
+//                FormattedData = FilterData.replace(" ", "");
+//                Toast.makeText(WriteTag.this, "" + FormattedData, Toast.LENGTH_SHORT).show();
 ////                PopulateGraphValue( Double.parseDouble(Vmp.trim()),
 ////                        Double.parseDouble(Imp.trim()),
 ////                        Double.parseDouble(Voc.trim()),
 ////                        Double.parseDouble(Isc.trim()));
-//                JSONArray companySettings = object.getJSONArray("companySettings_Information");
-//                JSONObject object2 = companySettings.getJSONObject(0);
-//
-//                String Sno = object2.getString("Sno");
-//                String ModuleID = object2.getString("Module ID");
-//                String PVMdlNumber = object2.getString("PV Model Number");
-//                String CellMfgName = object2.getString("Cell Mfg Name");
-//                String CellMfgCuntry = object2.getString("Cell Mfg Cuntry");
-//                String CellMfgDate = object2.getString("Cell Mfg Date");
-//                String ModuleMfg = object2.getString("Module Mfg");
-//                String ModuleMfgCountry = object2.getString("Module Mfg Country");
-//                String ModuleMfgDate = object2.getString("Module Mfg Date");
-//                String IECLab = object2.getString("IEC Lab");
+                JSONObject companySettings = object.getJSONObject("companySettings_Information");
 
 
-                Toast.makeText(WriteTag.this, response, Toast.LENGTH_LONG).show();
+                String Sno = companySettings.getString("sno");
+                String ModuleID = companySettings.getString("Module ID");
+                String PVMdlNumber = companySettings.getString("PV Model Number");
+                String CellMfgName = companySettings.getString("Cell Mfg Name");
+                String CellMfgCuntry = companySettings.getString("Cell Mfg Cuntry");
+                String CellMfgDate = companySettings.getString("Cell Mfg Date");
+                String ModuleMfg = companySettings.getString("Module Mfg");
+                String ModuleMfgCountry = companySettings.getString("Module Mfg Country");
+                String ModuleMfgDate = companySettings.getString("Module Mfg Date");
+                String IECLab = companySettings.getString("IEC Lab");
+                String IECDate = companySettings.getString("IEC Date");
+
+                writeDataModel = new WriteDataModel(SerialNo, date, time, Pmaxnew, FillFactor, Voc, Isc, Vmp, Imp, Sno, ModuleID, PVMdlNumber, CellMfgName, CellMfgCuntry, CellMfgDate, ModuleMfg, ModuleMfgCountry, ModuleMfgDate, IECLab, IECDate);
+
             } catch (JSONException e) {
                 e.printStackTrace();
             }
             Log.i("VOLLEY", response);
 //            dialog.dismiss();
         }, error -> {
-            Toast.makeText(WriteTag.this, "" + error.getMessage(), Toast.LENGTH_SHORT).show();
+//            Log.e("VOLLEY Negative", String.valueOf(error.networkResponse.statusCode));
+            Toast.makeText(WriteTag.this, "Not Found", Toast.LENGTH_SHORT).show();
             SerialInput.setText("");
+            progressDialog.dismiss();
+
         }) {
             @Override
             public String getBodyContentType() {
@@ -771,39 +798,216 @@ public class WriteTag extends AppCompatActivity implements View.OnClickListener 
                 return super.parseNetworkResponse(response);
             }
         };
-//        stringRequest.setRetryPolicy(new DefaultRetryPolicy(5, 2,
-//                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
         queue.add(stringRequest);
+    }
+
+    private void NEWDATA(String serialNo, String pmaxnew1, String vmp1, String imp1, String fillFactor1, String voc1, String isc1) {
+//        String FilterData = "";
+        String newP1, newp2, newVm1, newvm2, newImp1, newImp2, newFF1, newFF2, newVoc1, newVoc2, newISc1, newISc2;
+
+        StringTokenizer tokens = new StringTokenizer(pmaxnew1, ".");
+        String first = tokens.nextToken();
+        String second = tokens.nextToken();
+        if (first.length() >= 3) {
+            newP1 = first.substring(0, 3);
+        } else {
+            newP1 = "0" + first;
+            System.out.print("" + newP1);
+        }
+        if (second.length() > 2) {
+            newp2 = second.substring(0, 2);
+
+        } else {
+            newp2 = "0" + second;
+            System.out.print("" + newp2);
+        }
+        String FinalPmax = newP1.concat(newp2);
+        System.out.print("" + FinalPmax);
+
+//VMAX DECODING
+        StringTokenizer tokens4 = new StringTokenizer(vmp1, ".");
+        String first4 = tokens4.nextToken();
+        String second4 = tokens4.nextToken();
+        if (first4.length() >= 2) {
+            newVm1 = first4.substring(0, 2);
+        } else {
+            newVm1 = "0" + first;
+            System.out.print("" + newVm1);
+        }
+        if (second4.length() > 2) {
+            newvm2 = second4.substring(0, 2);
+
+        } else {
+            newvm2 = "0" + second4;
+            System.out.print("" + newvm2);
+        }
+        String Finalvmp = newVm1.concat(newvm2);
+        System.out.print("" + Finalvmp);
+
+        //Decoding IMP
+        StringTokenizer tokens5 = new StringTokenizer(imp1, ".");
+        String first5 = tokens5.nextToken();
+        String second5 = tokens5.nextToken();
+
+        if (first5.length() >= 2) {
+            newImp1 = first5.substring(0, 1);
+        } else {
+            newImp1 = "0" + first5;
+            System.out.print("" + newImp1);
+        }
+        if (second5.length() > 2) {
+            newImp2 = second5.substring(0, 2);
+
+        } else {
+            newImp2 = "0" + second5;
+            System.out.print("" + newImp2);
+        }
+        String FinalImp = newImp1.concat(newImp2);
+        System.out.print("" + FinalImp);
+
+
+        //Decoding FILL FACTOR
+        StringTokenizer tokens1 = new StringTokenizer(fillFactor1, ".");
+        String first1 = tokens1.nextToken();
+        String second1 = tokens1.nextToken();
+        if (first1.length() >= 3) {
+            newFF1 = first1.substring(0, 3);
+        } else {
+            newFF1 = "00" + first1;
+            System.out.print("" + newFF1);
+        }
+        if (second1.length() > 2) {
+            newFF2 = second1.substring(0, 2);
+
+        } else {
+            newFF2 = "00" + second1;
+            System.out.print("" + newFF2);
+        }
+        String FinalFF = newFF1.concat(newFF2);
+        System.out.print("" + FinalFF);
+
+        //Decoding VOC
+        StringTokenizer tokens2 = new StringTokenizer(voc1, ".");
+        String first2 = tokens2.nextToken();
+        String second2 = tokens2.nextToken();
+        if (first2.length() >= 2) {
+            newVoc1 = first2.substring(0, 2);
+        } else {
+            newVoc1 = "0" + first2;
+            System.out.print("" + newVoc1);
+        }
+        if (second2.length() > 2) {
+            newVoc2 = second2.substring(0, 2);
+
+        } else {
+            newVoc2 = "0" + second2;
+            System.out.print("" + newVoc2);
+        }
+        String FinalVoc = newVoc1.concat(newVoc2);
+        System.out.print("" + FinalFF);
+
+//Decoding ISC
+        StringTokenizer tokens3 = new StringTokenizer(isc1, ".");
+        String first3 = tokens3.nextToken();
+        String second3 = tokens3.nextToken();
+
+        if (first3.length() >= 2) {
+            newISc1 = first3.substring(0, 2);
+        } else {
+            newISc1 = "0" + first3;
+            System.out.print("" + newISc1);
+        }
+        if (second3.length() > 2) {
+            newISc2 = second3.substring(0, 2);
+
+        } else {
+            newISc2 = "0" + second3;
+            System.out.print("" + newISc2);
+        }
+        String FinalIsc = newISc1.concat(newISc2);
+        System.out.print("" + FinalFF);
+
+
+        String full = FinalPmax.concat(Finalvmp.concat(FinalImp.concat(FinalFF.concat(FinalVoc.concat(FinalIsc)))));
+        convertStringToHex(serialNo, full);
+
     }
 
     public String toHex(String arg) {
         return String.format("%x", new BigInteger(1, arg.getBytes()));
     }
 
-    public static String convertStringToHex(String str) {
+    public String convertStringToHex(String str, String formattedData) {
         // display in lowercase, default
         char[] chars = Hex.encodeHex(str.getBytes(StandardCharsets.UTF_8));
 
-        leadingZeros(String.valueOf(chars));
+
+        leadingZeros(String.valueOf(chars), formattedData);
         return String.valueOf(chars);
 
     }
 
-    public static String leadingZeros(String s) {
+    public String leadingZeros(String s, String formattedData) {
         String lemn;
-        if (s.length() >= 45) {
+        if (s.length() >= 46) {
             return s;
         } else {
-             lemn = String.format("%0" + (45 - s.length()) + "d%s", 0, s);
-            System.out.print("Value of Length"+lemn);
-            DataFormatting(lemn);
+            lemn = String.format("%0" + (46 - s.length()) + "d%s", 0, s);
+            System.out.print("Value of Length" + lemn);
+            DataFormatting(lemn, formattedData);
             return lemn;
         }
     }
 
-    public  static  void DataFormatting(String lemn)
-    {
-     String NewID=lemn.concat("000");
-     System.out.print("VALUE WITH ID"+NewID);
+    public void DataFormatting(String lemn, String formattedData) {
+        String NewID = "000" + formattedData;
+//        char[] chars1 = Hex.encodeHex(NewID.getBytes(StandardCharsets.UTF_8));
+        String FinalDATA = lemn.concat(String.valueOf(NewID).concat("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"));
+        System.out.print("VALUE WITH ID" + FinalDATA);
+//        fromHexString(FinalDATA.substring(0, 128));
+//        WriteData(FinalDATA.substring(0, 128));
+        hexStringToByteArray(FinalDATA.substring(0, 128));
+    }
+
+//    public String fromHexString(String hex) {
+//        StringBuilder str = new StringBuilder();
+//        for (int i = 0; i < hex.length(); i += 2) {
+//            str.append((char) Integer.parseInt(hex.substring(i, i + 2), 16));
+//        }
+//        WriteData(str.toString());
+//
+//        return str.toString();
+//    }
+
+    public byte[] hexStringToByteArray(String s) {
+        byte[] b = new byte[s.length() / 2];
+        for (int i = 0; i < b.length; i++) {
+            int index = i * 2;
+            int v = Integer.parseInt(s.substring(index, index + 2), 16);
+            b[i] = (byte) v;
+        }
+        WriteData(b);
+        return b;
+    }
+
+    public void WriteData(byte[] finalDATA) {
+        iuhfService.setOnWriteListener(new OnSpdWriteListener() {
+            @Override
+            public void getWriteData(SpdWriteData var1) {
+                System.out.print("Data Having " + var1.getStatus());
+
+            }
+        });
+        iuhfService.inventory_start();
+//        byte[] bytes = new byte[100];
+//
+//        String example = toHex(finalDATA);
+//        ;
+//
+//        bytes = example.getBytes();
+        int readArea = iuhfService.writeArea(3, 0, 32, "00000000", finalDATA);//1 count = 2 character
+        System.out.print("Value" + readArea);
+        ErrorCode(readArea);
     }
 }
