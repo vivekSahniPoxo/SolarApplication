@@ -10,9 +10,21 @@
         <entry key="..\:/Users/Admin/AndroidStudioProjects/SolarApplication/app/src/main/res/layout/activity_graph_view.xml" value="0.1921875" />
         <entry key="..\:/Users/Admin/AndroidStudioProjects/SolarApplication/app/src/main/res/layout/activity_main.xml" value="0.2" />
         <entry key="..\:/Users/Admin/AndroidStudioProjects/SolarApplication/app/src/main/res/layout/activity_read_tag.xml" value="0.18" />
+        <entry key="..\:/Users/Admin/AndroidStudioProjects/SolarApplication/app/src/main/res/layout/activity_setting.xml" value="0.22" />
         <entry key="..\:/Users/Admin/AndroidStudioProjects/SolarApplication/app/src/main/res/layout/activity_setting_form.xml" value="0.1921875" />
         <entry key="..\:/Users/Admin/AndroidStudioProjects/SolarApplication/app/src/main/res/layout/activity_write_tag.xml" value="0.33" />
         <entry key="..\:/Users/Admin/AndroidStudioProjects/SolarApplication/app/src/main/res/layout/customdailog.xml" value="0.25" />
+        <entry key="..\:/Users/Admin/AndroidStudioProjects/SolarApplication/app/src/main/res/layout/fragment_cell_manmufactre.xml" value="0.178125" />
+        <entry key="..\:/Users/Admin/AndroidStudioProjects/SolarApplication/app/src/main/res/layout/fragment_cellmanufacture.xml" value="0.2" />
+        <entry key="..\:/Users/Admin/AndroidStudioProjects/SolarApplication/app/src/main/res/layout/fragment_country_details.xml" value="0.1921875" />
+        <entry key="..\:/Users/Admin/AndroidStudioProjects/SolarApplication/app/src/main/res/layout/fragment_dashboard.xml" value="0.1921875" />
+        <entry key="..\:/Users/Admin/AndroidStudioProjects/SolarApplication/app/src/main/res/layout/fragment_home.xml" value="0.1921875" />
+        <entry key="..\:/Users/Admin/AndroidStudioProjects/SolarApplication/app/src/main/res/layout/fragment_module_details.xml" value="0.1921875" />
+        <entry key="..\:/Users/Admin/AndroidStudioProjects/SolarApplication/app/src/main/res/layout/fragment_module_manfacture.xml" value="0.1921875" />
+        <entry key="..\:/Users/Admin/AndroidStudioProjects/SolarApplication/app/src/main/res/layout/fragment_notifications.xml" value="0.2" />
+        <entry key="..\:/Users/Admin/AndroidStudioProjects/SolarApplication/app/src/main/res/layout/lablayout.xml" value="0.1921875" />
+        <entry key="..\:/Users/Admin/AndroidStudioProjects/SolarApplication/app/src/main/res/layout/listlayout.xml" value="0.1921875" />
+        <entry key="..\:/Users/Admin/AndroidStudioProjects/SolarApplication/app/src/main/res/menu/bottom_nav_menu.xml" value="0.1" />
       </map>
     </option>
   </component>

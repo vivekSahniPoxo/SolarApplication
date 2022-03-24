@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/navigation_home"
+        android:icon="@drawable/country"
+        android:title="Country Details" />
+
+    <item
+        android:id="@+id/navigation_dashboard"
+        android:icon="@drawable/moduledetails"
+        android:title="Module Manufacture" />
+
+    <item
+        android:id="@+id/navigation_notifications"
+        android:icon="@drawable/labec"
+        android:title="IEC Details " />
+    <item
+        android:id="@+id/navigation_CellManfactre"
+        android:icon="@drawable/solarcell"
+        android:title="Cell Manufacture" />
+
+    <item
+        android:id="@+id/navigation_ModuleDetails"
+        android:icon="@drawable/moduledetails"
+        android:title="Module Details" />
+</menu>
