@@ -43,24 +43,18 @@ import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xmlpull.v1.XmlPullParserFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
-public class ReadTag extends AppCompatActivity {
+public class ReadSqlite extends AppCompatActivity {
     GraphView linegraph;
     int pageHeight = 2200;
     int pagewidth = 1800;
@@ -71,23 +65,19 @@ public class ReadTag extends AppCompatActivity {
     Button ViewDetails;
     IUHFService iuhfService;
     CardView cardView;
-    String s;
     String FF, pmax1, Vmax1, IPMAx1, VOC1, ISC1;
-    String IDCheck;
     List<ReadList> readLists;
     String SerialId;
     Double V1, V2, V3, V4, V5, V6, V7, V8, V9, V10, C1, C2, C3, C10, C4, C5, C6, C7, C8, C9;
     String ID;
-    List<XmlModel> modelList;
+    List<ReportModelClass> modelList;
     boolean v;
     public TextView t1, t2, t3, t4, t5, t6, t7, t8, t9;
-
-
+    ReportDb reportDb;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_read_tag);
-        t1 = findViewById(R.id.Booktitle);
+        setContentView(R.layout.activity_read_sqlite);   t1 = findViewById(R.id.Booktitle);
         t2 = findViewById(R.id.SolarCell);
         t3 = findViewById(R.id.MonthPV);
         t4 = findViewById(R.id.MonthSolar);
@@ -97,11 +87,6 @@ public class ReadTag extends AppCompatActivity {
         ExcelGenerate = findViewById(R.id.GenerateExcel);
 
         iuhfService = UHFManager.getUHFService(this);
-//        try {
-//            FetchData();
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
         iuhfService.openDev();
         iuhfService.inventoryStart();
         iuhfService.setOnInventoryListener(new OnSpdInventoryListener() {
@@ -114,20 +99,21 @@ public class ReadTag extends AppCompatActivity {
                 checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
         }
-
+         reportDb=new ReportDb(this);
         modelList = new ArrayList<>();
         readLists = new ArrayList<>();
-        ParseXML();
+
 
         cardView = findViewById(R.id.button_Scan);
         cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 ReadData();
+                modelList = reportDb.getAllContacts();
+
             }
         });
-        Check();
-        Toast.makeText(this, ""+v, Toast.LENGTH_SHORT).show();
+//        Check();
 
 //
 
@@ -155,24 +141,23 @@ public class ReadTag extends AppCompatActivity {
                 TextView ISC = dailogbox.findViewById(R.id.ISC);
 
                 for (int i = 0; i < modelList.size(); i++) {
-                    if (ID.substring(2).matches(modelList.get(i).getId())) {
-
+                    if (ID.substring(2).matches(modelList.get(i).getID())) {
                         FillFactor.setText(FF);
                         Vmax.setText(Vmax1);
                         ISC.setText(ISC1);
                         Voc.setText(VOC1);
                         Pmax.setText(pmax1);
                         Imax.setText(IPMAx1);
-                        manufactureNamePV.setText(modelList.get(i).getPVMName());
-                        ModuleName.setText(modelList.get(i).getPVModule());
+                        manufactureNamePV.setText(modelList.get(i).getPVManuName());
+                        ModuleName.setText(modelList.get(i).getPVmodleName());
                         SerialModule.setText(SerialId);
-                        manufactureNameSolar.setText(modelList.get(i).getCellMName());
-                        MonthPV.setText(modelList.get(i).getPVDate());
-                        MonthSolar.setText(modelList.get(i).getCellDate());
-                        IECcertificate.setText(modelList.get(i).getIECLab());
-                        DateIEC.setText(modelList.get(i).getIECDate());
-                        OriginCountry.setText(modelList.get(i).getPVCountry());
-                        OriginSolar.setText(modelList.get(i).CellCountry);
+                        manufactureNameSolar.setText(modelList.get(i).getCellManuName());
+                        MonthPV.setText(modelList.get(i).getDatePv());
+                        MonthSolar.setText(modelList.get(i).getDateCell());
+                        IECcertificate.setText(modelList.get(i).getLabName());
+                        DateIEC.setText(modelList.get(i).getDateLab());
+                        OriginCountry.setText(modelList.get(i).getCountryPv());
+                        OriginSolar.setText(modelList.get(i).getCountryCell());
 
                     }
                 }
@@ -243,58 +228,27 @@ public class ReadTag extends AppCompatActivity {
         PopulateGraphValue(Double.parseDouble(Vmax1), Double.parseDouble(IPMAx1), Double.parseDouble(VOC1), Double.parseDouble(ISC1));
 //        SetData(ID.substring(2));
         for (int i = 0; i < modelList.size(); i++) {
-            if (ID.substring(2).matches(modelList.get(i).getId())) {
+            if (ID.substring(2).matches(modelList.get(i).getID())) {
                 t1.setText(SerialId);
                 Check();
 //                generatePDF();
-                t2.setText(modelList.get(i).getPVMName());
+                t2.setText(modelList.get(i).getPVManuName());
                 t3.setText(pmax1);
                 t4.setText(Vmax1);
                 t5.setText(IPMAx1);
-                Pvmanufacture = modelList.get(i).getPVMName();
-                cellManufacture = modelList.get(i).getCellMName();
-                PVMonth = modelList.get(i).getCellMName();
-                CellMonth = modelList.get(i).getCellDate();
-                PVcountry = modelList.get(i).getPVCountry();
-                CellCountry = modelList.get(i).getCellCountry();
-                Modelname = modelList.get(i).getPVModule();
-                LAb = modelList.get(i).getIECLab();
-                QualityCertificate = modelList.get(i).getCellCountry();
+                Pvmanufacture = modelList.get(i).getPVManuName();
+                cellManufacture = modelList.get(i).getCellManuName();
+                PVMonth = modelList.get(i).getDatePv();
+                CellMonth = modelList.get(i).getDateCell();
+                PVcountry = modelList.get(i).getCountryPv();
+                CellCountry = modelList.get(i).getCountryCell();
+                Modelname = modelList.get(i).getPVmodleName();
+                LAb = modelList.get(i).getDateLab();
+                QualityCertificate = modelList.get(i).getLabName();
             }
         }
     }
 
-    private void ParseXML() {
-        XmlPullParserFactory parserFactory;
-        try {
-            InputStream is = getAssets().open("XMLCompanySettings.xml");
-
-            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-            Document doc = dBuilder.parse(is);
-
-            Element element = doc.getDocumentElement();
-            element.normalize();
-
-            NodeList nList = doc.getElementsByTagName("Company");
-            for (int i = 0; i < nList.getLength(); i++) {
-
-                Node node = nList.item(i);
-                if (node.getNodeType() == Node.ELEMENT_NODE) {
-                    Element element2 = (Element) node;
-                    modelList.add(new XmlModel(getValue("ID", element2), getValue("PVModule", element2), getValue("Warranty", element2), getValue("PVMName", element2), getValue("PVCountry", element2), getValue("PVDate", element2), getValue("CellMName", element2), getValue("CellCountry", element2), getValue("CellDate", element2), getValue("IECLab", element2), getValue("IECDate", element2)));
-//                    model = new XmlModel(getValue("ID", element2), getValue("PVModule", element2), getValue("Warranty", element2), getValue("PVMName", element2), getValue("PVCountry", element2), getValue("PVDate", element2), getValue("CellMName", element2), getValue("CellCountry", element2), getValue("CellDate", element2), getValue("IECLab", element2), getValue("IECDate", element2));//                    textView.setText(textView.getText() + "\nName : " + getValue("ID", element2) + "\n");
-//                    textView.setText(textView.getText() + "Surname : " + getValue("Warranty", element2) + "\n");
-//                    textView.setText(textView.getText() + "-----------------------");
-//                    textView.setText(model.getId());
-
-                }
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     private static String getValue(String tag, Element element) {
         NodeList nodeList = element.getElementsByTagName(tag).item(0).getChildNodes();
@@ -417,7 +371,7 @@ public class ReadTag extends AppCompatActivity {
                 //Toast.makeText(MainActivity.this, "Series1: On Data Point clicked: " + dataPoint, Toast.LENGTH_SHORT).show();
                 double pointY = dataPoint.getY();
                 double pointX = dataPoint.getX();
-                Toast.makeText(ReadTag.this, pointX + " " + pointY, Toast.LENGTH_SHORT).show();
+                Toast.makeText(ReadSqlite.this, pointX + " " + pointY, Toast.LENGTH_SHORT).show();
             }
         });
         lineSeries.setThickness(8);
@@ -486,7 +440,7 @@ public class ReadTag extends AppCompatActivity {
             FileOutputStream fileOutputStream = new FileOutputStream(filepath);
             hssfWorkbook.write(fileOutputStream);
             if (fileOutputStream != null) {
-                Toast.makeText(ReadTag.this, "" + filepath, Toast.LENGTH_SHORT).show();
+                Toast.makeText(ReadSqlite.this, "" + filepath, Toast.LENGTH_SHORT).show();
                 fileOutputStream.flush();
                 fileOutputStream.close();
             }
@@ -957,7 +911,7 @@ public class ReadTag extends AppCompatActivity {
 
             // below line is to print toast message
             // on completion of PDF generation.
-            Toast.makeText(ReadTag.this, "PDF file generated successfully." + file, Toast.LENGTH_SHORT).show();
+            Toast.makeText(ReadSqlite.this, "PDF file generated successfully." + file, Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
             // below line is used
             // to handle error
@@ -978,7 +932,7 @@ public class ReadTag extends AppCompatActivity {
     }
 
     public void Check() {
-v = ExcelGenerate.isChecked();
+        v = ExcelGenerate.isChecked();
         Toast.makeText(this, ""+v, Toast.LENGTH_SHORT).show();
         ExcelGenerate.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override

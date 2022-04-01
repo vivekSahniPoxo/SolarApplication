@@ -31,10 +31,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         CardView b = (CardView) v;
         switch (b.getId()) {
             case R.id.Read_tab:
-                startActivity(new Intent(MainActivity.this, ReadTag.class));
+                startActivity(new Intent(MainActivity.this, ReadSqlite.class));
                 break;
             case R.id.Write_tab:
-                startActivity(new Intent(MainActivity.this, WriteTag.class));
+                startActivity(new Intent(MainActivity.this, WritetagSqllite.class));
                 break;
             case R.id.Configure_Tab:
                 startActivity(new Intent(MainActivity.this, ConfigureForm.class));

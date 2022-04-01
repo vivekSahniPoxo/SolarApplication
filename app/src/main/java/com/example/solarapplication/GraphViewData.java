@@ -2,6 +2,7 @@ package com.example.solarapplication;
 
 import static android.graphics.Color.RED;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -12,6 +13,7 @@ import android.graphics.pdf.PdfDocument;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -39,19 +41,20 @@ public class GraphViewData extends AppCompatActivity {
     List<ReadList> readLists;
     int pageHeight = 2200;
     int pagewidth = 1800;
-    Bitmap bmp, scaledbmp;
-    String FF, pmax1, Vmax1, IPMAx1, VOC1, ISC1,TagId, Pvmanufacture, cellManufacture, PVMonth, CellMonth, PVcountry, CellCountry, QualityCertificate, LAb, Modelname;
+    Bitmap bmp, scaledbmp1;
+    String FF, pmax1, Vmax1, IPMAx1, VOC1, ISC1, TagId, Pvmanufacture, cellManufacture, PVMonth, CellMonth, PVcountry, CellCountry, QualityCertificate, LAb, Modelname;
     Double V1, V2, V3, V4, V5, V6, V7, V8, V9, V10, C1, C2, C3, C10, C4, C5, C6, C7, C8, C9;
     IUHFService iuhfService;
     List<WriteDataModel> modelList;
-   WriteDataModel dataModel;
+    WriteDataModel dataModel;
+    Button viewData, PdfGenerate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_graph_view);
-
-        iuhfService= UHFManager.getUHFService(this);
+//        dataModel = new WriteDataModel();
+        iuhfService = UHFManager.getUHFService(this);
         iuhfService.openDev();
         iuhfService.inventoryStart();
         iuhfService.setOnInventoryListener(new OnSpdInventoryListener() {
@@ -60,7 +63,21 @@ public class GraphViewData extends AppCompatActivity {
                 TagId = var1.getEpc();
             }
         });
-        readLists=new ArrayList<>();
+        PdfGenerate = findViewById(R.id.GeneratePDF);
+        PdfGenerate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                generatePDF();
+            }
+        });
+        viewData = findViewById(R.id.ViewAll);
+        viewData.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(GraphViewData.this, "Click", Toast.LENGTH_SHORT).show();
+            }
+        });
+        readLists = new ArrayList<>();
         modelList = new ArrayList<>();
         linegraph = findViewById(R.id.line_graph);
         ReadData();
@@ -166,18 +183,16 @@ public class GraphViewData extends AppCompatActivity {
         linegraph.getViewport().setScrollable(true);
 
         linegraph.buildDrawingCache();
-        scaledbmp = linegraph.getDrawingCache();
+        scaledbmp1 = linegraph.getDrawingCache();
         lineSeries.setOnDataPointTapListener(new OnDataPointTapListener() {
             @Override
             public void onTap(Series series, DataPointInterface dataPoint) {
-                //Toast.makeText(MainActivity.this, "Series1: On Data Point clicked: " + dataPoint, Toast.LENGTH_SHORT).show();
                 double pointY = dataPoint.getY();
                 double pointX = dataPoint.getX();
                 Toast.makeText(GraphViewData.this, pointX + " " + pointY, Toast.LENGTH_SHORT).show();
             }
         });
         lineSeries.setThickness(8);
-
     }
 
     public void convertByteToHexadecimal(byte[] byteArray) {
@@ -248,9 +263,9 @@ public class GraphViewData extends AppCompatActivity {
     }
 
     private void generatePDF() {
+
+
         PdfDocument pdfDocument = new PdfDocument();
-
-
         Paint paint = new Paint();
         Paint title = new Paint();
         Paint title1 = new Paint();
@@ -261,7 +276,7 @@ public class GraphViewData extends AppCompatActivity {
         PdfDocument.Page myPage = pdfDocument.startPage(mypageInfo);
 
         Canvas canvas = myPage.getCanvas();
-        Bitmap resized1 = Bitmap.createScaledBitmap(scaledbmp, 900, 650, true);
+        Bitmap resized1 = Bitmap.createScaledBitmap(scaledbmp1, 900, 650, true);
 
         canvas.drawBitmap(resized1, 400, 1300, paint);
         canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------", 350, 1300, title);
@@ -625,6 +640,18 @@ public class GraphViewData extends AppCompatActivity {
         canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 1100, title);
         canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 230, title);
 
+        Intent intent = getIntent();
+        String sno = intent.getStringExtra("SNo");
+        String ModuleID = intent.getStringExtra("ModuleID");
+        String PVMdlNumber = intent.getStringExtra("PVMdlNumber");
+        String CellMfgName = intent.getStringExtra("CellMfgName");
+        String CellMfgCuntry = intent.getStringExtra("CellMfgCuntry");
+        String CellMfgDate = intent.getStringExtra("CellMfgDate");
+        String ModuleMfg = intent.getStringExtra("ModuleMfg");
+        String ModuleMfgCountry = intent.getStringExtra("ModuleMfgCountry");
+        String ModuleMfgDate = intent.getStringExtra("ModuleMfgDate");
+        String IECLab = intent.getStringExtra("IECLab");
+        String IECDate = intent.getStringExtra("IECDate");
 
         title.setTextAlign(Paint.Align.LEFT);
         canvas.drawText("ID of the Tag", xhead, 260, title);
@@ -632,22 +659,22 @@ public class GraphViewData extends AppCompatActivity {
         canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 285, title);
 
         canvas.drawText("PV Module Manufacture Name", xhead, 310, title);
-        canvas.drawText(dataModel.getModuleMfg(), xdata, 310, title);
+        canvas.drawText(PVMdlNumber, xdata, 310, title);
         canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 335, title);
 
         canvas.drawText("Month & Year of Pv Module Manufacture", xhead, 360, title);
-        canvas.drawText(dataModel.getCellMfgDate(), xdata, 360, title);
+        canvas.drawText(ModuleMfg, xdata, 360, title);
         canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 385, title);
         canvas.drawText("Country of Origin of Pv Module ", xhead, 410, title);
-        canvas.drawText(dataModel.getModuleMfgCountry(), xdata, 410, title);
+        canvas.drawText(ModuleMfgCountry, xdata, 410, title);
         canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 435, title);
 
         canvas.drawText("Unique Serial number of the Module ", xhead, 460, title);
-        canvas.drawText(dataModel.getSerialNo(), xdata, 460, title);
+        canvas.drawText(sno, xdata, 460, title);
         canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 485, title);
 
         canvas.drawText("Model Type", xhead, 510, title);
-        canvas.drawText(dataModel.getTime(), xdata, 510, title);
+        canvas.drawText(ModuleID, xdata, 510, title);
         canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 535, title);
 
         canvas.drawText("Max Wattage of the Module (P-max)", xhead, 560, title);
@@ -675,23 +702,23 @@ public class GraphViewData extends AppCompatActivity {
         canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 835, title);
 
         canvas.drawText("Name of the Manufacture of Solar Cell", xhead, 860, title);
-        canvas.drawText(dataModel.getCellMfgName(), xdata, 860, title);
+        canvas.drawText(CellMfgName, xdata, 860, title);
         canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 885, title);
 
         canvas.drawText("Month & Year of Solar Cell Manufacture", xhead, 910, title);
-        canvas.drawText(dataModel.getCellMfgDate(), xdata, 910, title);
+        canvas.drawText(CellMfgDate, xdata, 910, title);
         canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 935, title);
 
         canvas.drawText("Country of Origin Cell", xhead, 960, title);
-        canvas.drawText(dataModel.getCellMfgCuntry(), xdata, 960, title);
+        canvas.drawText(CellMfgCuntry, xdata, 960, title);
         canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 985, title);
 
         canvas.drawText("Date & Year of IEC Pv Module Qualification Certificate", xhead, 1010, title);
-        canvas.drawText(dataModel.getIECdate(), xdata, 1010, title);
+        canvas.drawText(IECDate, xdata, 1010, title);
         canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 1035, title);
 
         canvas.drawText("Name of the test lab Issuing IEC  Certificate", xhead, 1060, title);
-        canvas.drawText(dataModel.getIECLab(), xdata, 1060, title);
+        canvas.drawText(IECLab, xdata, 1060, title);
 
         // after adding all attributes to our
         // PDF file we will be finishing our page.
@@ -754,4 +781,6 @@ public class GraphViewData extends AppCompatActivity {
 //        Node node = nodeList.item(0);
 //        return node.getNodeValue();
 //    }
+
+
 }

@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginLeft="10dp"
+    android:background="@drawable/custom_btn"
+    android:layout_marginTop="10dp"
+    android:layout_marginRight="10dp"
+    app:cardCornerRadius="10dp">
+
+    <TableLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/custom_btn"
+       >
+
+        <TableRow
+
+            android:layout_width="match_parent">
+
+            <TextView
+                android:id="@+id/textView"
+                android:layout_width="150dp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:layout_height="wrap_content"
+                android:paddingLeft="10dp"
+                android:text="ID : "
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textSize="15dp" />
+
+            <TextView
+                android:id="@+id/Id"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:layout_width="230dp"
+                android:layout_height="match_parent"
+                android:layout_marginRight="5dp"
+                android:paddingLeft="10dp"
+                android:text="ID Show Here"
+                android:textSize="15dp" />
+
+
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                android:id="@+id/textView3"
+                android:layout_width="150dp"
+                android:paddingLeft="10dp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:layout_height="wrap_content"
+                android:text="P.V Manufacture :"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textSize="15dp" />
+
+            <TextView
+                android:id="@+id/pvnamemanu"
+                android:layout_width="wrap_content"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:layout_height="wrap_content"
+                android:paddingLeft="10dp"
+                android:text="Name Show Here"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textSize="15dp" />
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                android:id="@+id/textView5"
+                android:layout_width="150dp"
+                android:paddingLeft="10dp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:layout_height="wrap_content"
+                android:text="P.V Model : "
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textSize="15dp" />
+
+            <TextView
+                android:id="@+id/pvmodel"
+                android:layout_width="wrap_content"
+                android:paddingLeft="10dp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:layout_height="wrap_content"
+                android:text="Phone Number Show"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textSize="15dp" />
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                android:id="@+id/textView7"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:text="Cell Manufacture "
+                android:paddingLeft="10dp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textSize="15dp" />
+
+            <TextView
+                android:id="@+id/cellmanuname"
+                android:layout_width="wrap_content"
+                android:paddingLeft="10dp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:layout_height="wrap_content"
+                android:text="Subject Show Here"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textSize="15dp" />
+
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                android:id="@+id/textView9"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:text="Certificate Name : "
+                android:paddingLeft="10dp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textSize="15dp" />
+
+            <TextView
+                android:id="@+id/certiname"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingLeft="10dp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:text="Subject Show Here"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textSize="15dp" />
+
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                android:id="@+id/textView11"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:text="Warranty : "
+                android:paddingLeft="10dp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textSize="15dp" />
+
+            <TextView
+                android:id="@+id/warranty"
+                android:layout_width="wrap_content"
+                android:paddingLeft="10dp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:layout_height="wrap_content"
+                android:text="Subject Show Here"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textSize="15dp" />
+
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                android:id="@+id/textView13"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:paddingLeft="10dp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:text="Origin Country Pv : "
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textSize="15dp" />
+
+            <TextView
+                android:id="@+id/pvcountry"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingLeft="10dp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:text="Subject Show Here"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textSize="15dp" />
+
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                android:id="@+id/textView15"
+                android:layout_width="150dp"
+                android:paddingLeft="10dp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:layout_height="wrap_content"
+                android:text="Origin Country Cell : "
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textSize="15dp" />
+
+            <TextView
+                android:id="@+id/cellcountry"
+                android:layout_width="wrap_content"
+                android:paddingLeft="10dp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:layout_height="wrap_content"
+                android:text="Subject Show Here"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textSize="15dp" />
+
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                android:id="@+id/textView17"
+                android:layout_width="150dp"
+                android:paddingLeft="10dp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:layout_height="wrap_content"
+                android:text="Date Cell : "
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textSize="15dp" />
+
+            <TextView
+                android:id="@+id/datecell1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Subject Show Here"
+                android:paddingLeft="10dp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textSize="15dp" />
+
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                android:id="@+id/textView19"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:text="Date Pv : "
+                android:paddingLeft="10dp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textSize="15dp"
+
+                />
+
+            <TextView
+                android:id="@+id/datepv"
+                android:layout_width="wrap_content"
+                android:paddingLeft="10dp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:layout_height="wrap_content"
+                android:text="Subject Show Here"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textSize="15dp" />
+
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                android:id="@+id/textView21"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:text="Certification Date : "
+                android:paddingLeft="10dp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textSize="15dp"
+
+                />
+
+            <TextView
+                android:id="@+id/datecertificate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Subject Show Here"
+                android:paddingLeft="10dp"
+android:layout_marginBottom="5dp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textSize="15dp" />
+
+        </TableRow>
+    </TableLayout>
+
+
+</androidx.cardview.widget.CardView>

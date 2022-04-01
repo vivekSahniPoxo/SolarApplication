@@ -3,6 +3,9 @@ package com.example.solarapplication;
 public class WriteDataModel {
     String SerialNo, date, time, Pmaxnew, FillFactor, Voc, Isc, Vmp, Imp, sno, ModuleID, PVModelNumber, CellMfgName, CellMfgCuntry, CellMfgDate, moduleMfg, ModuleMfgCountry, ModuleMfgDate, IECLab, IECdate;
 
+    public WriteDataModel() {
+    }
+
     public WriteDataModel(String serialNo, String date, String time, String pmaxnew, String fillFactor, String voc, String isc, String vmp, String imp, String sno, String moduleID, String PVModelNumber, String cellMfgName, String cellMfgCuntry, String cellMfgDate, String moduleMfg, String moduleMfgCountry, String moduleMfgDate, String IECLab, String IECdate) {
         SerialNo = serialNo;
         this.date = date;

@@ -7,8 +7,11 @@ import android.os.Environment;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -44,21 +47,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-public class WriteTag extends AppCompatActivity implements View.OnClickListener {
+public class WritetagSqllite extends AppCompatActivity implements View.OnClickListener {
     Button ViewGraph, ViewDetails, SearchData;
     IUHFService iuhfService;
     EditText SerialInput;
     String SerialNo = "", date, time, Pmaxnew, FillFactor, Voc, Isc, Vmp, Imp, Sno, ModuleID, PVMdlNumber, CellMfgName, CellMfgCuntry, CellMfgDate, ModuleMfg, ModuleMfgCountry, ModuleMfgDate, IECLab, IECDate;
     File filepath = new File(Environment.getExternalStorageDirectory() + "/SolarWriteTagExcel.xls");
     ProgressDialog progressDialog;
-    List<WriteDataModel> dataModelList;
+    List<ReportModelClass> dataModelList;
+    Spinner spinnerdb;
+    String dbparameter;
+    List<ReportModelClass> reportModelClassList;
+    String ID, PVManuName, PVmodleName, CellManuName, LabName, Warranty, CountryPv, CountryCell, DateCell, DatePv, DateLab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_write_tag);
-
+        setContentView(R.layout.activity_writetag_sqllite);
         //Binding Components with Java File
+        spinnerdb = findViewById(R.id.spinner_db);
         SerialInput = findViewById(R.id.SearchKey);
         ViewGraph = findViewById(R.id.ViewGraph);
         ViewDetails = findViewById(R.id.ViewAllData);
@@ -73,6 +80,73 @@ public class WriteTag extends AppCompatActivity implements View.OnClickListener 
         iuhfService = UHFManager.getUHFService(this);
         iuhfService.openDev();
 
+        setspiner();
+
+
+    }
+
+    private void setspiner() {
+
+
+        List<ModuleDetailsModel> list = new ArrayList<>();
+        ModuleDB moduleDB;
+        List<String> stringList;
+        stringList = new ArrayList<>();
+        moduleDB = new ModuleDB(this);
+
+        list = moduleDB.getAllContacts();
+        for (int i = 0; i < list.size(); i++) {
+            stringList.add(list.get(i).getModuleName());
+        }
+
+        final ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this, R.layout.support_simple_spinner_dropdown_item, stringList);
+        spinnerArrayAdapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
+        spinnerdb.setAdapter(spinnerArrayAdapter);
+        spinnerdb.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                dbparameter = parent.getItemAtPosition(position).toString();
+                CallDBmethod(dbparameter);
+
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+    }
+
+    private void CallDBmethod(String dbparameter) {
+        ReportDb reportDb = new ReportDb(this);
+
+        reportModelClassList = new ArrayList<>();
+        reportModelClassList = reportDb.getAllDetails(dbparameter.trim());
+
+        ID = reportModelClassList.get(0).getID();
+
+
+        PVManuName = reportModelClassList.get(0).getPVManuName();
+
+        PVmodleName = reportModelClassList.get(0).getPVmodleName();
+
+        CellManuName = reportModelClassList.get(0).getCellManuName();
+        ;
+        LabName = reportModelClassList.get(0).getLabName();
+        ;
+        Warranty = reportModelClassList.get(0).getWarranty();
+        ;
+        CountryPv = reportModelClassList.get(0).getCountryPv();
+        ;
+        CountryCell = reportModelClassList.get(0).getCountryCell();
+        ;
+        DateCell = reportModelClassList.get(0).getDateCell();
+        ;
+        DatePv = reportModelClassList.get(0).getDatePv();
+        ;
+        DateLab = reportModelClassList.get(0).getDateLab();
+        ;
 
     }
 
@@ -82,13 +156,13 @@ public class WriteTag extends AppCompatActivity implements View.OnClickListener 
             case R.id.ViewAllData:
 //
                 if (SerialNo.length() == 0) {
-                    Toast.makeText(WriteTag.this, "Data Not Available for Excel", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(WritetagSqllite.this, "Data Not Available for Excel", Toast.LENGTH_SHORT).show();
                 } else {
                     createExcelSheet();
                 }
                 break;
             case R.id.ViewGraph:
-                Intent intent = new Intent(WriteTag.this, GraphViewData.class);
+                Intent intent = new Intent(WritetagSqllite.this, GraphViewData.class);
                 intent.putExtra("SNo", Sno);
                 intent.putExtra("ModuleID", ModuleID);
                 intent.putExtra("PVMdlNumber", PVMdlNumber);
@@ -188,7 +262,7 @@ public class WriteTag extends AppCompatActivity implements View.OnClickListener 
             FileOutputStream fileOutputStream = new FileOutputStream(filepath);
             hssfWorkbook.write(fileOutputStream);
             if (fileOutputStream != null) {
-                Toast.makeText(WriteTag.this, "" + filepath, Toast.LENGTH_SHORT).show();
+                Toast.makeText(WritetagSqllite.this, "" + filepath, Toast.LENGTH_SHORT).show();
                 fileOutputStream.flush();
                 fileOutputStream.close();
             }
@@ -674,23 +748,23 @@ public class WriteTag extends AppCompatActivity implements View.OnClickListener 
         switch (ErrorCode) {
             case 0:
                 progressDialog.dismiss();
-                Toast.makeText(WriteTag.this, "Writing Successfully...", Toast.LENGTH_SHORT).show();
+                Toast.makeText(WritetagSqllite.this, "Writing Successfully...", Toast.LENGTH_SHORT).show();
                 break;
             case -1:
                 progressDialog.dismiss();
-                Toast.makeText(WriteTag.this, "Writing failure...", Toast.LENGTH_SHORT).show();
+                Toast.makeText(WritetagSqllite.this, "Writing failure...", Toast.LENGTH_SHORT).show();
                 break;
             case -2:
                 progressDialog.dismiss();
-                Toast.makeText(WriteTag.this, "Incorrect content length", Toast.LENGTH_SHORT).show();
+                Toast.makeText(WritetagSqllite.this, "Incorrect content length", Toast.LENGTH_SHORT).show();
                 break;
             case -3:
                 progressDialog.dismiss();
-                Toast.makeText(WriteTag.this, " Invalid character", Toast.LENGTH_SHORT).show();
+                Toast.makeText(WritetagSqllite.this, " Invalid character", Toast.LENGTH_SHORT).show();
                 break;
             default:
                 progressDialog.dismiss();
-                Toast.makeText(WriteTag.this, "Writing Error ", Toast.LENGTH_SHORT).show();
+                Toast.makeText(WritetagSqllite.this, "Writing Error ", Toast.LENGTH_SHORT).show();
                 break;
 
 
@@ -753,8 +827,7 @@ public class WriteTag extends AppCompatActivity implements View.OnClickListener 
                 String Irra = technicleSettings_information.getString("irra");
                 String Binnumber = technicleSettings_information.getString("Bin number");
 
-
-                NEWDATA(SerialNo.trim(), Pmaxnew.trim(), Vmp.trim(), Imp.trim(), FillFactor.trim(), Voc.trim(), Isc.trim());
+                NEWDATA(SerialNo.trim(), Pmaxnew.trim(), Vmp.trim(), Imp.trim(), FillFactor.trim(), Voc.trim(), Isc.trim(), ID);
 //                String FilterData = PMAX.concat(VMP.concat(IMP.concat(FF.concat(VOC).concat(ISC))));
 
 
@@ -780,7 +853,7 @@ public class WriteTag extends AppCompatActivity implements View.OnClickListener 
                 IECDate = companySettings.getString("IEC Date");
 
 //                writeDataModel = new WriteDataModel(SerialNo, date, time, Pmaxnew, FillFactor, Voc, Isc, Vmp, Imp, Sno, ModuleID, PVMdlNumber, CellMfgName, CellMfgCuntry, CellMfgDate, ModuleMfg, ModuleMfgCountry, ModuleMfgDate, IECLab, IECDate);
-                dataModelList.add(new WriteDataModel(SerialNo, date, time, Pmaxnew, FillFactor, Voc, Isc, Vmp, Imp, Sno, ModuleID, PVMdlNumber, CellMfgName, CellMfgCuntry, CellMfgDate, ModuleMfg, ModuleMfgCountry, ModuleMfgDate, IECLab, IECDate));
+//                dataModelList.add(new WriteDataModel(SerialNo, date, time, Pmaxnew, FillFactor, Voc, Isc, Vmp, Imp, Sno, ModuleID, PVMdlNumber, CellMfgName, CellMfgCuntry, CellMfgDate, ModuleMfg, ModuleMfgCountry, ModuleMfgDate, IECLab, IECDate));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -788,7 +861,7 @@ public class WriteTag extends AppCompatActivity implements View.OnClickListener 
 //            dialog.dismiss();
         }, error -> {
 //            Log.e("VOLLEY Negative", String.valueOf(error.networkResponse.statusCode));
-            Toast.makeText(WriteTag.this, "Not Found", Toast.LENGTH_SHORT).show();
+            Toast.makeText(WritetagSqllite.this, "Not Found", Toast.LENGTH_SHORT).show();
             SerialInput.setText("");
             progressDialog.dismiss();
 
@@ -818,7 +891,7 @@ public class WriteTag extends AppCompatActivity implements View.OnClickListener 
         queue.add(stringRequest);
     }
 
-    private void NEWDATA(String serialNo, String pmaxnew1, String vmp1, String imp1, String fillFactor1, String voc1, String isc1) {
+    private void NEWDATA(String serialNo, String pmaxnew1, String vmp1, String imp1, String fillFactor1, String voc1, String isc1, String ID) {
 //        String FilterData = "";
         String newP1, newp2, newVm1, newvm2, newImp1, newImp2, newFF1, newFF2, newVoc1, newVoc2, newISc1, newISc2;
 
@@ -946,7 +1019,7 @@ public class WriteTag extends AppCompatActivity implements View.OnClickListener 
 
 
         String full = FinalPmax.concat(Finalvmp.concat(FinalImp.concat(FinalFF.concat(FinalVoc.concat(FinalIsc)))));
-        convertStringToHex(serialNo, full);
+        convertStringToHex(serialNo, full, ID);
 
     }
 
@@ -954,30 +1027,30 @@ public class WriteTag extends AppCompatActivity implements View.OnClickListener 
         return String.format("%x", new BigInteger(1, arg.getBytes()));
     }
 
-    public String convertStringToHex(String str, String formattedData) {
+    public String convertStringToHex(String str, String formattedData, String ID) {
         // display in lowercase, default
         char[] chars = Hex.encodeHex(str.getBytes(StandardCharsets.UTF_8));
 
 
-        leadingZeros(String.valueOf(chars), formattedData);
+        leadingZeros(String.valueOf(chars), formattedData, ID);
         return String.valueOf(chars);
 
     }
 
-    public String leadingZeros(String s, String formattedData) {
+    public String leadingZeros(String s, String formattedData, String ID) {
         String lemn;
         if (s.length() >= 46) {
             return s;
         } else {
             lemn = String.format("%0" + (46 - s.length()) + "d%s", 0, s);
             System.out.print("Value of Length" + lemn);
-            DataFormatting(lemn, formattedData);
+            DataFormatting(lemn, formattedData, ID);
             return lemn;
         }
     }
 
-    public void DataFormatting(String lemn, String formattedData) {
-        String NewID = "000" + formattedData;
+    public void DataFormatting(String lemn, String formattedData, String ID) {
+        String NewID = "00" + ID + formattedData;
 //        char[] chars1 = Hex.encodeHex(NewID.getBytes(StandardCharsets.UTF_8));
         String FinalDATA = lemn.concat(String.valueOf(NewID).concat("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"));
         System.out.print("VALUE WITH ID" + FinalDATA);
