@@ -10,6 +10,7 @@
     app:cardCornerRadius="10dp">
 
     <TableLayout
+        android:id="@+id/Myreportlayout"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/custom_btn"

@@ -2,7 +2,6 @@ package com.example.solarapplication;
 
 import static android.graphics.Color.RED;
 
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -12,11 +11,14 @@ import android.graphics.Typeface;
 import android.graphics.pdf.PdfDocument;
 import android.os.Bundle;
 import android.os.Environment;
+import android.text.format.DateFormat;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 
 import com.jjoe64.graphview.GraphView;
@@ -34,6 +36,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class GraphViewData extends AppCompatActivity {
@@ -42,20 +45,29 @@ public class GraphViewData extends AppCompatActivity {
     int pageHeight = 2200;
     int pagewidth = 1800;
     Bitmap bmp, scaledbmp1;
-    String FF, pmax1, Vmax1, IPMAx1, VOC1, ISC1, TagId, Pvmanufacture, cellManufacture, PVMonth, CellMonth, PVcountry, CellCountry, QualityCertificate, LAb, Modelname;
+    String FF, pmax1, Vmax1, IPMAx1, VOC1,ID ,ISC1, TagId, Pvmanufacture, cellManufacture, PVMonth, CellMonth, PVcountry, CellCountry, QualityCertificate, LAb, Modelname;
     Double V1, V2, V3, V4, V5, V6, V7, V8, V9, V10, C1, C2, C3, C10, C4, C5, C6, C7, C8, C9;
     IUHFService iuhfService;
-    List<WriteDataModel> modelList;
-    WriteDataModel dataModel;
+    List<ReportModelClass> modelList;
     Button viewData, PdfGenerate;
-
+    CardView scanread;
+    String sno,ModuleID,PVMdlNumber,CellMfgName,CellMfgCuntry,CellMfgDate,ModuleMfg,ModuleMfgCountry,ModuleMfgDate,IECLab,IECDate;
+    public TextView t1, t2, t3, t4, t5;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_graph_view);
 //        dataModel = new WriteDataModel();
+        scanread = findViewById(R.id.button_Scan);
         iuhfService = UHFManager.getUHFService(this);
         iuhfService.openDev();
+        t1 = findViewById(R.id.Booktitle);
+        t2 = findViewById(R.id.SolarCell);
+        t3 = findViewById(R.id.MonthPV);
+        t4 = findViewById(R.id.MonthSolar);
+        t5 = findViewById(R.id.IECcertificate);
+
+
         iuhfService.inventoryStart();
         iuhfService.setOnInventoryListener(new OnSpdInventoryListener() {
             @Override
@@ -79,8 +91,14 @@ public class GraphViewData extends AppCompatActivity {
         });
         readLists = new ArrayList<>();
         modelList = new ArrayList<>();
-        linegraph = findViewById(R.id.line_graph);
-        ReadData();
+        linegraph = findViewById(R.id.line_graphread);
+        scanread.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ReadData();
+
+            }
+        });
     }
 
 
@@ -181,7 +199,6 @@ public class GraphViewData extends AppCompatActivity {
         linegraph.getViewport().setScalable(true);
         linegraph.getViewport().setXAxisBoundsManual(true);
         linegraph.getViewport().setScrollable(true);
-
         linegraph.buildDrawingCache();
         scaledbmp1 = linegraph.getDrawingCache();
         lineSeries.setOnDataPointTapListener(new OnDataPointTapListener() {
@@ -193,6 +210,7 @@ public class GraphViewData extends AppCompatActivity {
             }
         });
         lineSeries.setThickness(8);
+
     }
 
     public void convertByteToHexadecimal(byte[] byteArray) {
@@ -214,7 +232,7 @@ public class GraphViewData extends AppCompatActivity {
 //        SerialId = new String(bytes, StandardCharsets.UTF_8);
 //        t1.setText(SerialId);
 //
-//        ID = hex.substring(46, 49);
+        ID = hex.substring(48, 49);
 
         Integer p = Integer.parseInt(hex.substring(49, 52));
         String max = hex.substring(52, 54);
@@ -237,19 +255,38 @@ public class GraphViewData extends AppCompatActivity {
 //        t8.setText("ISC: " + ISC);
         PopulateGraphValue(Double.parseDouble(Vmax1), Double.parseDouble(IPMAx1), Double.parseDouble(VOC1), Double.parseDouble(ISC1));
 //        SetData(ID.substring(2));
-//        for (int i = 0; i < modelList.size(); i++) {
-//            if (dataModel.getSerialNo().substring(2).matches(modelList.get(i).getSno())) {
-//
-//                Pvmanufacture = modelList.get(i).getPVMName();
-//                cellManufacture = modelList.get(i).getCellMName();
-//                PVMonth = modelList.get(i).getCellMName();
-//                CellMonth = modelList.get(i).getCellDate();
-//                PVcountry = modelList.get(i).getPVCountry();
-//                CellCountry = modelList.get(i).getCellCountry();
-//                Modelname = modelList.get(i).getPVModule();
-//                LAb = modelList.get(i).getIECLab();
-//                QualityCertificate = modelList.get(i).getCellCountry();
-//            }}
+        ReportDb reportDb= new ReportDb(this);
+        modelList=reportDb.getAllContacts();
+        for (int i = 0; i < modelList.size(); i++) {
+            if (ID.matches(modelList.get(i).getID())) {
+
+//                Pvmanufacture = modelList.get(i).getPVManuName();
+//                cellManufacture = modelList.get(i).getCellManuName();
+//                PVMonth = modelList.get(i).getDatePv();
+//                CellMonth = modelList.get(i).getDateCell();
+//                PVcountry = modelList.get(i).getCountryPv();
+//                CellCountry = modelList.get(i).getCountryCell();
+//                Modelname = modelList.get(i).getPVmodleName();
+//                LAb = modelList.get(i).getDateLab();
+//                QualityCertificate = modelList.get(i).getLabName();
+                sno = modelList.get(i).getID();
+                ModuleID =  modelList.get(i).getPVmodleName();
+                PVMdlNumber = modelList.get(i).getPVmodleName();
+                CellMfgName =  modelList.get(i).getCellManuName();
+                CellMfgCuntry = modelList.get(i).getCountryCell();
+                CellMfgDate =  modelList.get(i).getDateCell();
+                ModuleMfg = modelList.get(i).getPVManuName();
+                ModuleMfgCountry =modelList.get(i).getCountryPv();
+                ModuleMfgDate = modelList.get(i).getDatePv();
+                IECLab = modelList.get(i).getLabName();
+                IECDate = modelList.get(i).getDateLab();
+                PdfGenerate.setEnabled(true);
+                t1.setText(ModuleMfg);
+                t2.setText(CellMfgName);
+                t3.setText(ModuleMfgDate);
+                t4.setText(CellMfgDate);
+                t5.setText(IECLab);
+            }}
     }
 
     public static byte[] hexStringToByteArray(String hex) {
@@ -262,10 +299,11 @@ public class GraphViewData extends AppCompatActivity {
         return data;
     }
 
+
     private void generatePDF() {
-
-
         PdfDocument pdfDocument = new PdfDocument();
+
+
         Paint paint = new Paint();
         Paint title = new Paint();
         Paint title1 = new Paint();
@@ -637,21 +675,10 @@ public class GraphViewData extends AppCompatActivity {
         canvas.drawText("|", Yline, 1080, title);
 
 
+
         canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 1100, title);
         canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 230, title);
 
-        Intent intent = getIntent();
-        String sno = intent.getStringExtra("SNo");
-        String ModuleID = intent.getStringExtra("ModuleID");
-        String PVMdlNumber = intent.getStringExtra("PVMdlNumber");
-        String CellMfgName = intent.getStringExtra("CellMfgName");
-        String CellMfgCuntry = intent.getStringExtra("CellMfgCuntry");
-        String CellMfgDate = intent.getStringExtra("CellMfgDate");
-        String ModuleMfg = intent.getStringExtra("ModuleMfg");
-        String ModuleMfgCountry = intent.getStringExtra("ModuleMfgCountry");
-        String ModuleMfgDate = intent.getStringExtra("ModuleMfgDate");
-        String IECLab = intent.getStringExtra("IECLab");
-        String IECDate = intent.getStringExtra("IECDate");
 
         title.setTextAlign(Paint.Align.LEFT);
         canvas.drawText("ID of the Tag", xhead, 260, title);
@@ -726,7 +753,9 @@ public class GraphViewData extends AppCompatActivity {
 
         // below line is used to set the name of
         // our PDF file and its path.
-        File file = new File(Environment.getExternalStorageDirectory(), "WriteTagSolar.pdf");
+        Date d = new Date();
+        CharSequence s  = DateFormat.format("MMMM d, yyyy ", d.getTime());
+        File file = new File(Environment.getExternalStorageDirectory(), s+"WriteTagSolar.pdf");
 
         try {
             // after creating a file name we will
@@ -745,6 +774,7 @@ public class GraphViewData extends AppCompatActivity {
         // location we are closing our PDF file.
         pdfDocument.close();
     }
+
 //    private void ParseXML() {
 //        XmlPullParserFactory parserFactory;
 //        try {

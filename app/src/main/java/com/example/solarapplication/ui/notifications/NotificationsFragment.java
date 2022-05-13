@@ -47,21 +47,13 @@ public class NotificationsFragment extends Fragment {
         recyclerView = root.findViewById(R.id.Recyclerview_Lab);
         certificatename = root.findViewById(R.id.CertificateName);
         list = new ArrayList<>();
-        localDB = new LocalDBIEC(getContext());
-        list = localDB.getAllContacts();
-        if (list.size() > 0) {
-            adapterLab = new AdapterLab(getContext(), list);
-            recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-            recyclerView.setAdapter(adapterLab);
-            adapterLab.notifyDataSetChanged();
-        } else {
-            Toast.makeText(getContext(), "No Data Available...", Toast.LENGTH_SHORT).show();
-        }
+        SetRecyclerview();
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 localDB.addContact(new LabModel(DateValue.toString().trim(), certificatename.getText().toString().trim()));
                 certificatename.setText("");
+                SetRecyclerview();
             }
         });
 
@@ -82,6 +74,20 @@ public class NotificationsFragment extends Fragment {
             }
         });
         return root;
+    }
+
+    private void SetRecyclerview() {
+        localDB = new LocalDBIEC(getContext());
+        list = localDB.getAllContacts();
+        if (list.size() > 0) {
+            adapterLab = new AdapterLab(getContext(), list);
+            recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+            recyclerView.setAdapter(adapterLab);
+            adapterLab.notifyDataSetChanged();
+        } else {
+            Toast.makeText(getContext(), "No Data Available...", Toast.LENGTH_SHORT).show();
+        }
+
     }
 
     @Override

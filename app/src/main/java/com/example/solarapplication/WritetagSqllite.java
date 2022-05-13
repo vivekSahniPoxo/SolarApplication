@@ -4,14 +4,17 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -30,28 +33,41 @@ import com.speedata.libuhf.bean.SpdWriteData;
 import com.speedata.libuhf.interfaces.OnSpdWriteListener;
 
 import org.apache.commons.codec.binary.Hex;
+import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
 
 public class WritetagSqllite extends AppCompatActivity implements View.OnClickListener {
-    Button ViewGraph, ViewDetails, SearchData;
+    Button ViewGraph, SearchData;
+    CheckBox ViewDetails;
+    TextView pvmanutxt, cellmanutxt, pvdatetxt, celldatetxt, cellcountrytxt, pvcoiuntrytxt, labnametxt, labdatetxt, pmaxtxt, imaxtxt, voctxt,
+            modeltxt, isctxt, fftxt, vmaxtxt, serialnotxt;
     IUHFService iuhfService;
     EditText SerialInput;
     String SerialNo = "", date, time, Pmaxnew, FillFactor, Voc, Isc, Vmp, Imp, Sno, ModuleID, PVMdlNumber, CellMfgName, CellMfgCuntry, CellMfgDate, ModuleMfg, ModuleMfgCountry, ModuleMfgDate, IECLab, IECDate;
+    Date d = new Date();
+    CharSequence s = DateFormat.format("MMMM d, yyyy ", d.getTime());
+
     File filepath = new File(Environment.getExternalStorageDirectory() + "/SolarWriteTagExcel.xls");
     ProgressDialog progressDialog;
     List<ReportModelClass> dataModelList;
@@ -65,15 +81,33 @@ public class WritetagSqllite extends AppCompatActivity implements View.OnClickLi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_writetag_sqllite);
         //Binding Components with Java File
+        modeltxt = findViewById(R.id.ModuleName);
+        isctxt = findViewById(R.id.ISC);
+        fftxt = findViewById(R.id.FillFactor);
+        vmaxtxt = findViewById(R.id.Vmax);
+        serialnotxt = findViewById(R.id.SerialModule);
+        pvmanutxt = findViewById(R.id.PvModule);
+        cellmanutxt = findViewById(R.id.SolarCell);
+        pvdatetxt = findViewById(R.id.MonthPV);
+        celldatetxt = findViewById(R.id.MonthSolar);
+        cellcountrytxt = findViewById(R.id.OriginSolar);
+        pvcoiuntrytxt = findViewById(R.id.OriginCountry);
+        labnametxt = findViewById(R.id.IECcertificate);
+        labdatetxt = findViewById(R.id.DateIEC);
+        pmaxtxt = findViewById(R.id.Pmax);
+        imaxtxt = findViewById(R.id.Imax);
+        voctxt = findViewById(R.id.Voc);
+
+
         spinnerdb = findViewById(R.id.spinner_db);
         SerialInput = findViewById(R.id.SearchKey);
         ViewGraph = findViewById(R.id.ViewGraph);
         ViewDetails = findViewById(R.id.ViewAllData);
         SearchData = findViewById(R.id.Search_Data);
         progressDialog = new ProgressDialog(this);
-        SearchData.setOnClickListener(this::onClick);
-        ViewGraph.setOnClickListener(this::onClick);
-        ViewDetails.setOnClickListener(this::onClick);
+        SearchData.setOnClickListener(this);
+        ViewGraph.setOnClickListener(this);
+        ViewDetails.setOnClickListener(this);
 
         dataModelList = new ArrayList<>();
         //RFID Module Initialize
@@ -86,7 +120,6 @@ public class WritetagSqllite extends AppCompatActivity implements View.OnClickLi
     }
 
     private void setspiner() {
-
 
         List<ModuleDetailsModel> list = new ArrayList<>();
         ModuleDB moduleDB;
@@ -106,7 +139,7 @@ public class WritetagSqllite extends AppCompatActivity implements View.OnClickLi
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 dbparameter = parent.getItemAtPosition(position).toString();
-                CallDBmethod(dbparameter);
+
 
             }
 
@@ -120,47 +153,37 @@ public class WritetagSqllite extends AppCompatActivity implements View.OnClickLi
 
     private void CallDBmethod(String dbparameter) {
         ReportDb reportDb = new ReportDb(this);
-
         reportModelClassList = new ArrayList<>();
         reportModelClassList = reportDb.getAllDetails(dbparameter.trim());
-
         ID = reportModelClassList.get(0).getID();
-
-
         PVManuName = reportModelClassList.get(0).getPVManuName();
-
         PVmodleName = reportModelClassList.get(0).getPVmodleName();
-
         CellManuName = reportModelClassList.get(0).getCellManuName();
-        ;
         LabName = reportModelClassList.get(0).getLabName();
-        ;
         Warranty = reportModelClassList.get(0).getWarranty();
-        ;
         CountryPv = reportModelClassList.get(0).getCountryPv();
-        ;
         CountryCell = reportModelClassList.get(0).getCountryCell();
-        ;
         DateCell = reportModelClassList.get(0).getDateCell();
-        ;
         DatePv = reportModelClassList.get(0).getDatePv();
-        ;
         DateLab = reportModelClassList.get(0).getDateLab();
-        ;
+
+        serialnotxt.setText(ID);
+        pvmanutxt.setText(PVManuName);
+        modeltxt.setText(PVmodleName);
+        cellmanutxt.setText(CellManuName);
+        labnametxt.setText(LabName);
+        labdatetxt.setText(DateLab);
+        cellcountrytxt.setText(CountryCell);
+        pvcoiuntrytxt.setText(CountryPv);
+        pvdatetxt.setText(DatePv);
+        celldatetxt.setText(DateCell);
 
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.ViewAllData:
-//
-                if (SerialNo.length() == 0) {
-                    Toast.makeText(WritetagSqllite.this, "Data Not Available for Excel", Toast.LENGTH_SHORT).show();
-                } else {
-                    createExcelSheet();
-                }
-                break;
+
             case R.id.ViewGraph:
                 Intent intent = new Intent(WritetagSqllite.this, GraphViewData.class);
                 intent.putExtra("SNo", Sno);
@@ -184,6 +207,7 @@ public class WritetagSqllite extends AppCompatActivity implements View.OnClickLi
                     progressDialog.setCancelable(false);
                     progressDialog.setMessage("Please wait While Writing Data...");
                     progressDialog.show();
+                    CallDBmethod(dbparameter);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -272,477 +296,6 @@ public class WritetagSqllite extends AppCompatActivity implements View.OnClickLi
         }
     }
 
-//    private void generatePDF() {
-//        PdfDocument pdfDocument = new PdfDocument();
-//
-//
-//        Paint paint = new Paint();
-//        Paint title = new Paint();
-//        Paint title1 = new Paint();
-//
-//
-//        PdfDocument.PageInfo mypageInfo = new PdfDocument.PageInfo.Builder(pagewidth, pageHeight, 1).create();
-//
-//        PdfDocument.Page myPage = pdfDocument.startPage(mypageInfo);
-//
-//        Canvas canvas = myPage.getCanvas();
-//        Bitmap resized1 = Bitmap.createScaledBitmap(scaledbmp, 900, 650, true);
-//
-//        canvas.drawBitmap(resized1, 400, 1300, paint);
-//        canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------", 350, 1300, title);
-//        canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------", 350, 1990, title);
-//// Left Side Graph Box Line
-//        canvas.drawText("|", 350, 1305, title);
-//        canvas.drawText("|", 350, 1310, title);
-//        canvas.drawText("|", 350, 1320, title);
-//        canvas.drawText("|", 350, 1330, title);
-//        canvas.drawText("|", 350, 1340, title);
-//        canvas.drawText("|", 350, 1350, title);
-//        canvas.drawText("|", 350, 1360, title);
-//        canvas.drawText("|", 350, 1370, title);
-//        canvas.drawText("|", 350, 1380, title);
-//        canvas.drawText("|", 350, 1390, title);
-//        canvas.drawText("|", 350, 1400, title);
-//        canvas.drawText("|", 350, 1410, title);
-//        canvas.drawText("|", 350, 1420, title);
-//        canvas.drawText("|", 350, 1430, title);
-//        canvas.drawText("|", 350, 1440, title);
-//        canvas.drawText("|", 350, 1450, title);
-//        canvas.drawText("|", 350, 1460, title);
-//        canvas.drawText("|", 350, 1470, title);
-//        canvas.drawText("|", 350, 1480, title);
-//        canvas.drawText("|", 350, 1490, title);
-//        canvas.drawText("|", 350, 1500, title);
-//        canvas.drawText("|", 350, 1510, title);
-//        canvas.drawText("|", 350, 1520, title);
-//        canvas.drawText("|", 350, 1530, title);
-//        canvas.drawText("|", 350, 1540, title);
-//        canvas.drawText("|", 350, 1550, title);
-//        canvas.drawText("|", 350, 1560, title);
-//        canvas.drawText("|", 350, 1570, title);
-//        canvas.drawText("|", 350, 1580, title);
-//        canvas.drawText("|", 350, 1590, title);
-//        canvas.drawText("|", 350, 1600, title);
-//        canvas.drawText("|", 350, 1610, title);
-//        canvas.drawText("|", 350, 1620, title);
-//        canvas.drawText("|", 350, 1630, title);
-//        canvas.drawText("|", 350, 1640, title);
-//        canvas.drawText("|", 350, 1650, title);
-//        canvas.drawText("|", 350, 1660, title);
-//        canvas.drawText("|", 350, 1670, title);
-//        canvas.drawText("|", 350, 1680, title);
-//        canvas.drawText("|", 350, 1690, title);
-//        canvas.drawText("|", 350, 1700, title);
-//        canvas.drawText("|", 350, 1710, title);
-//        canvas.drawText("|", 350, 1720, title);
-//        canvas.drawText("|", 350, 1730, title);
-//        canvas.drawText("|", 350, 1740, title);
-//        canvas.drawText("|", 350, 1750, title);
-//        canvas.drawText("|", 350, 1760, title);
-//        canvas.drawText("|", 350, 1770, title);
-//        canvas.drawText("|", 350, 1780, title);
-//        canvas.drawText("|", 350, 1790, title);
-//        canvas.drawText("|", 350, 1800, title);
-//        canvas.drawText("|", 350, 1810, title);
-//        canvas.drawText("|", 350, 1820, title);
-//        canvas.drawText("|", 350, 1830, title);
-//        canvas.drawText("|", 350, 1840, title);
-//        canvas.drawText("|", 350, 1850, title);
-//        canvas.drawText("|", 350, 1860, title);
-//        canvas.drawText("|", 350, 1870, title);
-//        canvas.drawText("|", 350, 1880, title);
-//        canvas.drawText("|", 350, 1890, title);
-//        canvas.drawText("|", 350, 1900, title);
-//        canvas.drawText("|", 350, 1910, title);
-//        canvas.drawText("|", 350, 1920, title);
-//        canvas.drawText("|", 350, 1930, title);
-//        canvas.drawText("|", 350, 1940, title);
-//        canvas.drawText("|", 350, 1950, title);
-//        canvas.drawText("|", 350, 1960, title);
-//        canvas.drawText("|", 350, 1970, title);
-//        canvas.drawText("|", 350, 1980, title);
-////        canvas.drawText("|", 350, 1990, title);
-//
-//        //Right Side Line Graph Table
-//        int xaxis = 1400;
-//        canvas.drawText("|", xaxis, 1305, title);
-//        canvas.drawText("|", xaxis, 1310, title);
-//        canvas.drawText("|", xaxis, 1320, title);
-//        canvas.drawText("|", xaxis, 1330, title);
-//        canvas.drawText("|", xaxis, 1340, title);
-//        canvas.drawText("|", xaxis, 1350, title);
-//        canvas.drawText("|", xaxis, 1360, title);
-//        canvas.drawText("|", xaxis, 1370, title);
-//        canvas.drawText("|", xaxis, 1380, title);
-//        canvas.drawText("|", xaxis, 1390, title);
-//        canvas.drawText("|", xaxis, 1400, title);
-//        canvas.drawText("|", xaxis, 1410, title);
-//        canvas.drawText("|", xaxis, 1420, title);
-//        canvas.drawText("|", xaxis, 1430, title);
-//        canvas.drawText("|", xaxis, 1440, title);
-//        canvas.drawText("|", xaxis, 1450, title);
-//        canvas.drawText("|", xaxis, 1460, title);
-//        canvas.drawText("|", xaxis, 1470, title);
-//        canvas.drawText("|", xaxis, 1480, title);
-//        canvas.drawText("|", xaxis, 1490, title);
-//        canvas.drawText("|", xaxis, 1500, title);
-//        canvas.drawText("|", xaxis, 1510, title);
-//        canvas.drawText("|", xaxis, 1520, title);
-//        canvas.drawText("|", xaxis, 1530, title);
-//        canvas.drawText("|", xaxis, 1540, title);
-//        canvas.drawText("|", xaxis, 1550, title);
-//        canvas.drawText("|", xaxis, 1560, title);
-//        canvas.drawText("|", xaxis, 1570, title);
-//        canvas.drawText("|", xaxis, 1580, title);
-//        canvas.drawText("|", xaxis, 1590, title);
-//        canvas.drawText("|", xaxis, 1600, title);
-//        canvas.drawText("|", xaxis, 1610, title);
-//        canvas.drawText("|", xaxis, 1620, title);
-//        canvas.drawText("|", xaxis, 1630, title);
-//        canvas.drawText("|", xaxis, 1640, title);
-//        canvas.drawText("|", xaxis, 1650, title);
-//        canvas.drawText("|", xaxis, 1660, title);
-//        canvas.drawText("|", xaxis, 1670, title);
-//        canvas.drawText("|", xaxis, 1680, title);
-//        canvas.drawText("|", xaxis, 1690, title);
-//        canvas.drawText("|", xaxis, 1700, title);
-//        canvas.drawText("|", xaxis, 1710, title);
-//        canvas.drawText("|", xaxis, 1720, title);
-//        canvas.drawText("|", xaxis, 1730, title);
-//        canvas.drawText("|", xaxis, 1740, title);
-//        canvas.drawText("|", xaxis, 1750, title);
-//        canvas.drawText("|", xaxis, 1760, title);
-//        canvas.drawText("|", xaxis, 1770, title);
-//        canvas.drawText("|", xaxis, 1780, title);
-//        canvas.drawText("|", xaxis, 1790, title);
-//        canvas.drawText("|", xaxis, 1800, title);
-//        canvas.drawText("|", xaxis, 1810, title);
-//        canvas.drawText("|", xaxis, 1820, title);
-//        canvas.drawText("|", xaxis, 1830, title);
-//        canvas.drawText("|", xaxis, 1840, title);
-//        canvas.drawText("|", xaxis, 1850, title);
-//        canvas.drawText("|", xaxis, 1860, title);
-//        canvas.drawText("|", xaxis, 1870, title);
-//        canvas.drawText("|", xaxis, 1880, title);
-//        canvas.drawText("|", xaxis, 1890, title);
-//        canvas.drawText("|", xaxis, 1900, title);
-//        canvas.drawText("|", xaxis, 1910, title);
-//        canvas.drawText("|", xaxis, 1920, title);
-//        canvas.drawText("|", xaxis, 1930, title);
-//        canvas.drawText("|", xaxis, 1940, title);
-//        canvas.drawText("|", xaxis, 1950, title);
-//        canvas.drawText("|", xaxis, 1960, title);
-//        canvas.drawText("|", xaxis, 1970, title);
-//        canvas.drawText("|", xaxis, 1980, title);
-////        canvas.drawText("|", xaxis, 1990, title);
-//
-//        bmp = BitmapFactory.decodeResource(getResources(), R.drawable.logo);
-//        Bitmap resized = Bitmap.createScaledBitmap(bmp, 350, 200, true);
-//        canvas.drawBitmap(resized, 700, 10, paint);
-//        title1.setColor(RED);
-//        title1.setTextSize(30);
-//        title1.setTypeface(Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD));
-//        title.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.NORMAL));
-//
-//        // below line is used for setting text size
-//        // which we will be displaying in our PDF file.
-//        title.setTextSize(35);
-//
-//        // below line is sued for setting color
-//        // of our text inside our PDF file.
-//        title.setColor(ContextCompat.getColor(this, R.color.black));
-//
-//
-////
-////        // similarly we are creating anothe]r text and in this
-////        // we are aligning this text to center of our PDF file.
-//        title.setTypeface(Typeface.defaultFromStyle(Typeface.NORMAL));
-//        title.setColor(ContextCompat.getColor(this, R.color.black));
-////        title.setTextSize(20);
-//
-//        // below line is used for setting
-//        // our text to center of PDF.
-//        int xhead = 200, xdata = 1200, xline = 180, Yline = 1700;
-//
-//
-//        canvas.drawText("|", xline, 240, title);
-//        canvas.drawText("|", xline, 250, title);
-//        canvas.drawText("|", xline, 260, title);
-//        canvas.drawText("|", xline, 270, title);
-//        canvas.drawText("|", xline, 280, title);
-//        canvas.drawText("|", xline, 290, title);
-//        canvas.drawText("|", xline, 300, title);
-//        canvas.drawText("|", xline, 310, title);
-//        canvas.drawText("|", xline, 320, title);
-//        canvas.drawText("|", xline, 330, title);
-//        canvas.drawText("|", xline, 340, title);
-//        canvas.drawText("|", xline, 350, title);
-//        canvas.drawText("|", xline, 360, title);
-//        canvas.drawText("|", xline, 370, title);
-//        canvas.drawText("|", xline, 380, title);
-//        canvas.drawText("|", xline, 390, title);
-//        canvas.drawText("|", xline, 400, title);
-//        canvas.drawText("|", xline, 410, title);
-//        canvas.drawText("|", xline, 420, title);
-//        canvas.drawText("|", xline, 430, title);
-//        canvas.drawText("|", xline, 440, title);
-//        canvas.drawText("|", xline, 450, title);
-//        canvas.drawText("|", xline, 460, title);
-//        canvas.drawText("|", xline, 470, title);
-//        canvas.drawText("|", xline, 480, title);
-//        canvas.drawText("|", xline, 490, title);
-//        canvas.drawText("|", xline, 500, title);
-//        canvas.drawText("|", xline, 510, title);
-//        canvas.drawText("|", xline, 520, title);
-//        canvas.drawText("|", xline, 530, title);
-//        canvas.drawText("|", xline, 540, title);
-//        canvas.drawText("|", xline, 550, title);
-//        canvas.drawText("|", xline, 560, title);
-//        canvas.drawText("|", xline, 570, title);
-//        canvas.drawText("|", xline, 580, title);
-//        canvas.drawText("|", xline, 590, title);
-//        canvas.drawText("|", xline, 600, title);
-//        canvas.drawText("|", xline, 610, title);
-//        canvas.drawText("|", xline, 620, title);
-//        canvas.drawText("|", xline, 630, title);
-//        canvas.drawText("|", xline, 640, title);
-//        canvas.drawText("|", xline, 650, title);
-//        canvas.drawText("|", xline, 660, title);
-//        canvas.drawText("|", xline, 670, title);
-//        canvas.drawText("|", xline, 680, title);
-//        canvas.drawText("|", xline, 690, title);
-//        canvas.drawText("|", xline, 700, title);
-//        canvas.drawText("|", xline, 710, title);
-//        canvas.drawText("|", xline, 720, title);
-//        canvas.drawText("|", xline, 730, title);
-//        canvas.drawText("|", xline, 740, title);
-//        canvas.drawText("|", xline, 750, title);
-//        canvas.drawText("|", xline, 760, title);
-//        canvas.drawText("|", xline, 760, title);
-//        canvas.drawText("|", xline, 770, title);
-//        canvas.drawText("|", xline, 780, title);
-//        canvas.drawText("|", xline, 780, title);
-//        canvas.drawText("|", xline, 790, title);
-//        canvas.drawText("|", xline, 800, title);
-//        canvas.drawText("|", xline, 810, title);
-//        canvas.drawText("|", xline, 820, title);
-//        canvas.drawText("|", xline, 830, title);
-//        canvas.drawText("|", xline, 840, title);
-//        canvas.drawText("|", xline, 850, title);
-//        canvas.drawText("|", xline, 860, title);
-//        canvas.drawText("|", xline, 870, title);
-//        canvas.drawText("|", xline, 880, title);
-//        canvas.drawText("|", xline, 890, title);
-//        canvas.drawText("|", xline, 900, title);
-//        canvas.drawText("|", xline, 910, title);
-//        canvas.drawText("|", xline, 920, title);
-//        canvas.drawText("|", xline, 930, title);
-//        canvas.drawText("|", xline, 940, title);
-//        canvas.drawText("|", xline, 950, title);
-//        canvas.drawText("|", xline, 960, title);
-//        canvas.drawText("|", xline, 960, title);
-//        canvas.drawText("|", xline, 970, title);
-//        canvas.drawText("|", xline, 980, title);
-//        canvas.drawText("|", xline, 990, title);
-//        canvas.drawText("|", xline, 1000, title);
-//        canvas.drawText("|", xline, 1010, title);
-//        canvas.drawText("|", xline, 1020, title);
-//        canvas.drawText("|", xline, 1030, title);
-//        canvas.drawText("|", xline, 1030, title);
-//        canvas.drawText("|", xline, 1040, title);
-//        canvas.drawText("|", xline, 1050, title);
-//        canvas.drawText("|", xline, 1060, title);
-//        canvas.drawText("|", xline, 1070, title);
-//        canvas.drawText("|", xline, 1080, title);
-//
-//        //Right Side line of Table
-//        canvas.drawText("|", Yline, 240, title);
-//        canvas.drawText("|", Yline, 250, title);
-//        canvas.drawText("|", Yline, 260, title);
-//        canvas.drawText("|", Yline, 270, title);
-//        canvas.drawText("|", Yline, 280, title);
-//        canvas.drawText("|", Yline, 290, title);
-//        canvas.drawText("|", Yline, 300, title);
-//        canvas.drawText("|", Yline, 310, title);
-//        canvas.drawText("|", Yline, 320, title);
-//        canvas.drawText("|", Yline, 330, title);
-//        canvas.drawText("|", Yline, 340, title);
-//        canvas.drawText("|", Yline, 350, title);
-//        canvas.drawText("|", Yline, 360, title);
-//        canvas.drawText("|", Yline, 370, title);
-//        canvas.drawText("|", Yline, 380, title);
-//        canvas.drawText("|", Yline, 390, title);
-//        canvas.drawText("|", Yline, 400, title);
-//        canvas.drawText("|", Yline, 410, title);
-//        canvas.drawText("|", Yline, 420, title);
-//        canvas.drawText("|", Yline, 430, title);
-//        canvas.drawText("|", Yline, 440, title);
-//        canvas.drawText("|", Yline, 450, title);
-//        canvas.drawText("|", Yline, 460, title);
-//        canvas.drawText("|", Yline, 470, title);
-//        canvas.drawText("|", Yline, 480, title);
-//        canvas.drawText("|", Yline, 490, title);
-//        canvas.drawText("|", Yline, 500, title);
-//        canvas.drawText("|", Yline, 510, title);
-//        canvas.drawText("|", Yline, 520, title);
-//        canvas.drawText("|", Yline, 530, title);
-//        canvas.drawText("|", Yline, 540, title);
-//        canvas.drawText("|", Yline, 550, title);
-//        canvas.drawText("|", Yline, 560, title);
-//        canvas.drawText("|", Yline, 570, title);
-//        canvas.drawText("|", Yline, 580, title);
-//        canvas.drawText("|", Yline, 590, title);
-//        canvas.drawText("|", Yline, 600, title);
-//        canvas.drawText("|", Yline, 610, title);
-//        canvas.drawText("|", Yline, 620, title);
-//        canvas.drawText("|", Yline, 630, title);
-//        canvas.drawText("|", Yline, 640, title);
-//        canvas.drawText("|", Yline, 650, title);
-//        canvas.drawText("|", Yline, 660, title);
-//        canvas.drawText("|", Yline, 670, title);
-//        canvas.drawText("|", Yline, 680, title);
-//        canvas.drawText("|", Yline, 690, title);
-//        canvas.drawText("|", Yline, 700, title);
-//        canvas.drawText("|", Yline, 710, title);
-//        canvas.drawText("|", Yline, 720, title);
-//        canvas.drawText("|", Yline, 730, title);
-//        canvas.drawText("|", Yline, 740, title);
-//        canvas.drawText("|", Yline, 750, title);
-//        canvas.drawText("|", Yline, 760, title);
-//        canvas.drawText("|", Yline, 760, title);
-//        canvas.drawText("|", Yline, 770, title);
-//        canvas.drawText("|", Yline, 780, title);
-//        canvas.drawText("|", Yline, 780, title);
-//        canvas.drawText("|", Yline, 790, title);
-//        canvas.drawText("|", Yline, 800, title);
-//        canvas.drawText("|", Yline, 810, title);
-//        canvas.drawText("|", Yline, 820, title);
-//        canvas.drawText("|", Yline, 830, title);
-//        canvas.drawText("|", Yline, 840, title);
-//        canvas.drawText("|", Yline, 850, title);
-//        canvas.drawText("|", Yline, 860, title);
-//        canvas.drawText("|", Yline, 870, title);
-//        canvas.drawText("|", Yline, 880, title);
-//        canvas.drawText("|", Yline, 890, title);
-//        canvas.drawText("|", Yline, 900, title);
-//        canvas.drawText("|", Yline, 910, title);
-//        canvas.drawText("|", Yline, 920, title);
-//        canvas.drawText("|", Yline, 930, title);
-//        canvas.drawText("|", Yline, 940, title);
-//        canvas.drawText("|", Yline, 950, title);
-//        canvas.drawText("|", Yline, 960, title);
-//        canvas.drawText("|", Yline, 960, title);
-//        canvas.drawText("|", Yline, 970, title);
-//        canvas.drawText("|", Yline, 980, title);
-//        canvas.drawText("|", Yline, 990, title);
-//        canvas.drawText("|", Yline, 1000, title);
-//        canvas.drawText("|", Yline, 1010, title);
-//        canvas.drawText("|", Yline, 1020, title);
-//        canvas.drawText("|", Yline, 1030, title);
-//        canvas.drawText("|", Yline, 1030, title);
-//        canvas.drawText("|", Yline, 1040, title);
-//        canvas.drawText("|", Yline, 1050, title);
-//        canvas.drawText("|", Yline, 1060, title);
-//        canvas.drawText("|", Yline, 1070, title);
-//        canvas.drawText("|", Yline, 1080, title);
-//
-//
-//        canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 1100, title);
-//        canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 230, title);
-//
-//
-//        title.setTextAlign(Paint.Align.LEFT);
-//        canvas.drawText("ID of the Tag", xhead, 260, title);
-//        canvas.drawText(TagId, xdata, 260, title);
-//        canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 285, title);
-//
-//        canvas.drawText("PV Module Manufacture Name", xhead, 310, title);
-//        canvas.drawText(Pvmanufacture, xdata, 310, title);
-//        canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 335, title);
-//
-//        canvas.drawText("Month & Year of Pv Module Manufacture", xhead, 360, title);
-//        canvas.drawText(PVMonth, xdata, 360, title);
-//        canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 385, title);
-//        canvas.drawText("Country of Origin of Pv Module ", xhead, 410, title);
-//        canvas.drawText(Pvmanufacture, xdata, 410, title);
-//        canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 435, title);
-//
-//        canvas.drawText("Unique Serial number of the Module ", xhead, 460, title);
-//        canvas.drawText(SerialId, xdata, 460, title);
-//        canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 485, title);
-//
-//        canvas.drawText("Model Type", xhead, 510, title);
-//        canvas.drawText(Modelname, xdata, 510, title);
-//        canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 535, title);
-//
-//        canvas.drawText("Max Wattage of the Module (P-max)", xhead, 560, title);
-//        canvas.drawText(pmax1, xdata, 560, title);
-//        canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 585, title);
-//
-//        canvas.drawText("Max Current of the Module (I-max)", xhead, 610, title);
-//        canvas.drawText(IPMAx1, xdata, 610, title);
-//        canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 635, title);
-//
-//        canvas.drawText("Max Voltage of the Module (V-max)", xhead, 660, title);
-//        canvas.drawText(Vmax1, xdata, 660, title);
-//        canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 685, title);
-//
-//        canvas.drawText("Short circuit current of the Module (ISC)", xhead, 710, title);
-//        canvas.drawText(ISC1, xdata, 710, title);
-//        canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 735, title);
-//
-//        canvas.drawText("Open circuit current of the Module (VOC)", xhead, 760, title);
-//        canvas.drawText(VOC1, xdata, 760, title);
-//        canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 785, title);
-//
-//        canvas.drawText("Fill Factor of the Module (ISC)", xhead, 810, title);
-//        canvas.drawText(ISC1, xdata, 810, title);
-//        canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 835, title);
-//
-//        canvas.drawText("Name of the Manufacture of Solar Cell", xhead, 860, title);
-//        canvas.drawText(cellManufacture, xdata, 860, title);
-//        canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 885, title);
-//
-//        canvas.drawText("Month & Year of Solar Cell Manufacture", xhead, 910, title);
-//        canvas.drawText(CellMonth, xdata, 910, title);
-//        canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 935, title);
-//
-//        canvas.drawText("Country of Origin Cell", xhead, 960, title);
-//        canvas.drawText(CellCountry, xdata, 960, title);
-//        canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 985, title);
-//
-//        canvas.drawText("Date & Year of IEC Pv Module Qualification Certificate", xhead, 1010, title);
-//        canvas.drawText(QualityCertificate, xdata, 1010, title);
-//        canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 1035, title);
-//
-//        canvas.drawText("Name of the test lab Issuing IEC  Certificate", xhead, 1060, title);
-//        canvas.drawText(LAb, xdata, 1060, title);
-//
-//        // after adding all attributes to our
-//        // PDF file we will be finishing our page.
-//        pdfDocument.finishPage(myPage);
-//
-//        // below line is used to set the name of
-//        // our PDF file and its path.
-//        File file = new File(Environment.getExternalStorageDirectory(), "Solar.pdf");
-//
-//        try {
-//            // after creating a file name we will
-//            // write our PDF file to that location.
-//            pdfDocument.writeTo(new FileOutputStream(file));
-//
-//            // below line is to print toast message
-//            // on completion of PDF generation.
-//            Toast.makeText(ReadTag.this, "PDF file generated successfully." + file, Toast.LENGTH_SHORT).show();
-//        } catch (IOException e) {
-//            // below line is used
-//            // to handle error
-//            e.printStackTrace();
-//        }
-//        // after storing our pdf to that
-//        // location we are closing our PDF file.
-//        pdfDocument.close();
-//    }
 
     public void ErrorCode(int ErrorCode) {
         switch (ErrorCode) {
@@ -840,17 +393,17 @@ public class WritetagSqllite extends AppCompatActivity implements View.OnClickLi
                 JSONObject companySettings = object.getJSONObject("companySettings_Information");
 
 
-                Sno = companySettings.getString("sno");
-                ModuleID = companySettings.getString("Module ID");
-                PVMdlNumber = companySettings.getString("PV Model Number");
-                CellMfgName = companySettings.getString("Cell Mfg Name");
-                CellMfgCuntry = companySettings.getString("Cell Mfg Cuntry");
-                CellMfgDate = companySettings.getString("Cell Mfg Date");
-                ModuleMfg = companySettings.getString("Module Mfg");
-                ModuleMfgCountry = companySettings.getString("Module Mfg Country");
-                ModuleMfgDate = companySettings.getString("Module Mfg Date");
-                IECLab = companySettings.getString("IEC Lab");
-                IECDate = companySettings.getString("IEC Date");
+//                Sno = companySettings.getString("sno");
+//                ModuleID = companySettings.getString("Module ID");
+//                PVMdlNumber = companySettings.getString("PV Model Number");
+//                CellMfgName = companySettings.getString("Cell Mfg Name");
+//                CellMfgCuntry = companySettings.getString("Cell Mfg Cuntry");
+//                CellMfgDate = companySettings.getString("Cell Mfg Date");
+//                ModuleMfg = companySettings.getString("Module Mfg");
+//                ModuleMfgCountry = companySettings.getString("Module Mfg Country");
+//                ModuleMfgDate = companySettings.getString("Module Mfg Date");
+//                IECLab = companySettings.getString("IEC Lab");
+//                IECDate = companySettings.getString("IEC Date");
 
 //                writeDataModel = new WriteDataModel(SerialNo, date, time, Pmaxnew, FillFactor, Voc, Isc, Vmp, Imp, Sno, ModuleID, PVMdlNumber, CellMfgName, CellMfgCuntry, CellMfgDate, ModuleMfg, ModuleMfgCountry, ModuleMfgDate, IECLab, IECDate);
 //                dataModelList.add(new WriteDataModel(SerialNo, date, time, Pmaxnew, FillFactor, Voc, Isc, Vmp, Imp, Sno, ModuleID, PVMdlNumber, CellMfgName, CellMfgCuntry, CellMfgDate, ModuleMfg, ModuleMfgCountry, ModuleMfgDate, IECLab, IECDate));
@@ -1020,12 +573,16 @@ public class WritetagSqllite extends AppCompatActivity implements View.OnClickLi
 
         String full = FinalPmax.concat(Finalvmp.concat(FinalImp.concat(FinalFF.concat(FinalVoc.concat(FinalIsc)))));
         convertStringToHex(serialNo, full, ID);
+        vmaxtxt.setText(vmp1);
+        pmaxtxt.setText(pmaxnew1);
+        imaxtxt.setText(imp1);
+        fftxt.setText(fillFactor1);
+        voctxt.setText(voc1);
+        isctxt.setText(isc1);
+
 
     }
 
-    public String toHex(String arg) {
-        return String.format("%x", new BigInteger(1, arg.getBytes()));
-    }
 
     public String convertStringToHex(String str, String formattedData, String ID) {
         // display in lowercase, default
@@ -1098,5 +655,77 @@ public class WritetagSqllite extends AppCompatActivity implements View.OnClickLi
         int readArea = iuhfService.writeArea(3, 0, 32, "00000000", finalDATA);//1 count = 2 character
         System.out.print("Value" + readArea);
         ErrorCode(readArea);
+        Check();
+    }
+
+    public void Check() {
+        if (ViewDetails.isChecked()) {
+            if (filepath.exists()) {
+                UpdateExcelWrite();
+            } else {
+                createExcelSheet();
+            }
+        }
+
+
+    }
+
+    private void UpdateExcelWrite() {
+        Object[][] newStudents = {
+                {SerialNo, Pmaxnew, Vmp, Imp, Isc, Voc, FillFactor},
+        };
+
+        try {
+            //Creating input stream
+            FileInputStream inputStream = new FileInputStream(filepath);
+
+            //Creating workbook from input stream
+            Workbook workbook = WorkbookFactory.create(inputStream);
+
+            //Reading first sheet of excel file
+            Sheet sheet = workbook.getSheetAt(0);
+
+            //Getting the count of existing records
+            int rowCount = sheet.getLastRowNum();
+
+            //Iterating new students to update
+            for (Object[] student : newStudents) {
+
+                //Creating new row from the next row count
+                Row row = sheet.createRow(++rowCount);
+
+                int columnCount = 0;
+
+                //Iterating student informations
+                for (Object info : student) {
+
+                    //Creating new cell and setting the value
+                    Cell cell = row.createCell(columnCount++);
+                    if (info instanceof String) {
+                        cell.setCellValue((String) info);
+                    } else if (info instanceof Integer) {
+                        cell.setCellValue((Integer) info);
+                    }
+                }
+            }
+            //Close input stream
+            inputStream.close();
+
+            //Crating output stream and writing the updated workbook
+            FileOutputStream os = new FileOutputStream(filepath);
+            workbook.write(os);
+
+            //Close the workbook and output stream
+            workbook.close();
+            os.close();
+            Toast.makeText(WritetagSqllite.this, "Excel file has been updated successfully.", Toast.LENGTH_SHORT).show();
+            System.out.println("Excel file has been updated successfully.");
+
+        } catch (EncryptedDocumentException | IOException e) {
+            System.err.println("Exception while updating an existing excel file.");
+            Toast.makeText(WritetagSqllite.this, "Exception while updating an existing excel file.", Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+        }
+
     }
 }

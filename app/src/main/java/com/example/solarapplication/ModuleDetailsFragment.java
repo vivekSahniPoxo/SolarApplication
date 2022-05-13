@@ -36,6 +36,20 @@ List<ModuleDetailsModel> list;
 
         moduleDB=new ModuleDB(getContext());
         list=new ArrayList<>();
+       SetupRecycler();
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                moduleDB.addContact(new ModuleDetailsModel(ModuleNametext.getText().toString().trim()));
+                ModuleNametext.setText("");
+                SetupRecycler();
+            }
+        });
+
+        return view;
+    }
+
+    private void SetupRecycler() {
         list = moduleDB.getAllContacts();
         //Setting Data in List
         if (list.size()>0) {
@@ -47,14 +61,5 @@ List<ModuleDetailsModel> list;
         else {
             Toast.makeText(getContext(), "No Data Available...", Toast.LENGTH_SHORT).show();
         }
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                moduleDB.addContact(new ModuleDetailsModel(ModuleNametext.getText().toString().trim()));
-                ModuleNametext.setText("");
-            }
-        });
-
-        return view;
     }
 }

@@ -39,7 +39,20 @@ public class DashboardFragment extends Fragment {
         btnSave = root.findViewById(R.id.BtnSave);
         localDB = new LocalDbManufactue(getContext());
 
+        SetupRecyclerview();
         //Getting Local DB Data in List
+
+        btnSave.setOnClickListener(v -> {
+            localDB.addManufacture(new ManufactureModel(ManufactureName.getText().toString().trim()));
+            ManufactureName.setText("");
+            SetupRecyclerview();
+        });
+
+
+        return root;
+    }
+
+    private void SetupRecyclerview() {
         list = localDB.getallManufactureName();
         //Setting Data in List
         if (list.size()>0) {
@@ -51,13 +64,6 @@ public class DashboardFragment extends Fragment {
         else {
             Toast.makeText(getContext(), "No Data Available...", Toast.LENGTH_SHORT).show();
         }
-        btnSave.setOnClickListener(v -> {
-            localDB.addManufacture(new ManufactureModel(ManufactureName.getText().toString().trim()));
-            ManufactureName.setText("");
-        });
-
-
-        return root;
     }
 
     @Override

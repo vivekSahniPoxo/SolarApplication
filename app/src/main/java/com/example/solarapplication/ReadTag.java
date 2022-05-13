@@ -15,12 +15,12 @@ import android.graphics.pdf.PdfDocument;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.text.format.DateFormat;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -39,10 +39,16 @@ import com.speedata.libuhf.UHFManager;
 import com.speedata.libuhf.bean.SpdInventoryData;
 import com.speedata.libuhf.interfaces.OnSpdInventoryListener;
 
+import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -50,11 +56,13 @@ import org.w3c.dom.NodeList;
 import org.xmlpull.v1.XmlPullParserFactory;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -67,26 +75,27 @@ public class ReadTag extends AppCompatActivity {
     String TagId, Pvmanufacture, cellManufacture, PVMonth, CellMonth, PVcountry, CellCountry, QualityCertificate, LAb, Modelname;
     CheckBox ExcelGenerate, PdfGenerate;
     Bitmap bmp, scaledbmp;
-    File filepath = new File(Environment.getExternalStorageDirectory() + "/SolarExcel.xls");
+    File filepath = new File(Environment.getExternalStorageDirectory(), "/SolarExcelReadTag.xls");
+
     Button ViewDetails;
     IUHFService iuhfService;
     CardView cardView;
-    String s;
     String FF, pmax1, Vmax1, IPMAx1, VOC1, ISC1;
-    String IDCheck;
     List<ReadList> readLists;
     String SerialId;
     Double V1, V2, V3, V4, V5, V6, V7, V8, V9, V10, C1, C2, C3, C10, C4, C5, C6, C7, C8, C9;
     String ID;
     List<XmlModel> modelList;
-    boolean v;
-    public TextView t1, t2, t3, t4, t5, t6, t7, t8, t9;
+    public TextView t1, t2, t3, t4, t5, t6;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_read_tag);
+
+
+//        initMethod();
         t1 = findViewById(R.id.Booktitle);
         t2 = findViewById(R.id.SolarCell);
         t3 = findViewById(R.id.MonthPV);
@@ -97,11 +106,6 @@ public class ReadTag extends AppCompatActivity {
         ExcelGenerate = findViewById(R.id.GenerateExcel);
 
         iuhfService = UHFManager.getUHFService(this);
-//        try {
-//            FetchData();
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
         iuhfService.openDev();
         iuhfService.inventoryStart();
         iuhfService.setOnInventoryListener(new OnSpdInventoryListener() {
@@ -124,10 +128,10 @@ public class ReadTag extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 ReadData();
+//                UpdateExcel();
             }
         });
-        Check();
-        Toast.makeText(this, ""+v, Toast.LENGTH_SHORT).show();
+
 
 //
 
@@ -193,6 +197,115 @@ public class ReadTag extends AppCompatActivity {
 
     }
 
+//    private void initMethod() {
+////        Calendar cal=Calendar.getInstance();
+////        SimpleDateFormat month_date = new SimpleDateFormat("MMMM");
+////        String month_name = month_date.format(cal.getTime());
+//
+////        Date d = new Date();
+////        CharSequence s  = DateFormat.format("yyyy-MM", d.getTime());
+////        String dd=s+"Xml";
+//        filepath = new File(Environment.getExternalStorageDirectory(), "/SolarExcelReadTag.xls");
+//        t1 = findViewById(R.id.Booktitle);
+//        t2 = findViewById(R.id.SolarCell);
+//        t3 = findViewById(R.id.MonthPV);
+//        t4 = findViewById(R.id.MonthSolar);
+//        ViewDetails = findViewById(R.id.ViewAll);
+//        t5 = findViewById(R.id.IECcertificate);
+//        PdfGenerate = findViewById(R.id.GeneratePDf);
+//        ExcelGenerate = findViewById(R.id.GenerateExcel);
+//
+//        iuhfService = UHFManager.getUHFService(this);
+//        iuhfService.openDev();
+//        iuhfService.inventoryStart();
+//        iuhfService.setOnInventoryListener(new OnSpdInventoryListener() {
+//            @Override
+//            public void getInventoryData(SpdInventoryData var1) {
+//                TagId = var1.getEpc();
+//            }
+//        });
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+//                checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+//            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+//        }
+//
+//        modelList = new ArrayList<>();
+//        readLists = new ArrayList<>();
+//        ParseXML();
+//
+//        cardView = findViewById(R.id.button_Scan);
+//        cardView.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                ReadData();
+////                UpdateExcel();
+//            }
+//        });
+//
+//
+////
+//
+//        linegraph = (GraphView) findViewById(R.id.line_graph);
+//        ViewDetails.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                AlertDialog.Builder builder = new AlertDialog.Builder(v.getRootView().getContext());
+//                View dailogbox = LayoutInflater.from(v.getRootView().getContext()).inflate(R.layout.customdailog, null);
+//                TextView manufactureNamePV = dailogbox.findViewById(R.id.PvModule);
+//                TextView manufactureNameSolar = dailogbox.findViewById(R.id.SolarCell);
+//                TextView MonthPV = dailogbox.findViewById(R.id.MonthPV);
+//                TextView MonthSolar = dailogbox.findViewById(R.id.MonthSolar);
+//                TextView IECcertificate = dailogbox.findViewById(R.id.IECcertificate);
+//                TextView DateIEC = dailogbox.findViewById(R.id.DateIEC);
+//                TextView OriginCountry = dailogbox.findViewById(R.id.OriginCountry);
+//                TextView OriginSolar = dailogbox.findViewById(R.id.OriginSolar);
+//                TextView Pmax = dailogbox.findViewById(R.id.Pmax);
+//                TextView Imax = dailogbox.findViewById(R.id.Imax);
+//                TextView Voc = dailogbox.findViewById(R.id.Voc);
+//                TextView SerialModule = dailogbox.findViewById(R.id.SerialModule);
+//                TextView ModuleName = dailogbox.findViewById(R.id.ModuleName);
+//                TextView Vmax = dailogbox.findViewById(R.id.Vmax);
+//                TextView FillFactor = dailogbox.findViewById(R.id.FillFactor);
+//                TextView ISC = dailogbox.findViewById(R.id.ISC);
+//
+//                for (int i = 0; i < modelList.size(); i++) {
+//                    if (ID.substring(2).matches(modelList.get(i).getId())) {
+//
+//                        FillFactor.setText(FF);
+//                        Vmax.setText(Vmax1);
+//                        ISC.setText(ISC1);
+//                        Voc.setText(VOC1);
+//                        Pmax.setText(pmax1);
+//                        Imax.setText(IPMAx1);
+//                        manufactureNamePV.setText(modelList.get(i).getPVMName());
+//                        ModuleName.setText(modelList.get(i).getPVModule());
+//                        SerialModule.setText(SerialId);
+//                        manufactureNameSolar.setText(modelList.get(i).getCellMName());
+//                        MonthPV.setText(modelList.get(i).getPVDate());
+//                        MonthSolar.setText(modelList.get(i).getCellDate());
+//                        IECcertificate.setText(modelList.get(i).getIECLab());
+//                        DateIEC.setText(modelList.get(i).getIECDate());
+//                        OriginCountry.setText(modelList.get(i).getPVCountry());
+//                        OriginSolar.setText(modelList.get(i).CellCountry);
+//
+//                    }
+//                }
+//                FillFactor.setText(FF);
+//                Vmax.setText(Vmax1);
+//                ISC.setText(ISC1);
+//                Voc.setText(VOC1);
+//                Pmax.setText(pmax1);
+//                Imax.setText(IPMAx1);
+////                t7.setText(model_search.getTagID());
+//
+//                builder.setView(dailogbox);
+//                builder.setCancelable(true);
+//                builder.show();
+//
+//            }
+//        });
+//    }
+
 
     //Convert Byte Arrray to
     public void convertByteToHexadecimal(byte[] byteArray) {
@@ -213,7 +326,7 @@ public class ReadTag extends AppCompatActivity {
         System.out.print("VALUE OF DATA " + vv);
         byte[] bytes = hexStringToByteArray(vv);
         SerialId = new String(bytes, StandardCharsets.UTF_8);
-        t1.setText(SerialId);
+//        t1.setText(SerialId);
 
         ID = hex.substring(46, 49);
 
@@ -244,13 +357,7 @@ public class ReadTag extends AppCompatActivity {
 //        SetData(ID.substring(2));
         for (int i = 0; i < modelList.size(); i++) {
             if (ID.substring(2).matches(modelList.get(i).getId())) {
-                t1.setText(SerialId);
-                Check();
-//                generatePDF();
-                t2.setText(modelList.get(i).getPVMName());
-                t3.setText(pmax1);
-                t4.setText(Vmax1);
-                t5.setText(IPMAx1);
+
                 Pvmanufacture = modelList.get(i).getPVMName();
                 cellManufacture = modelList.get(i).getCellMName();
                 PVMonth = modelList.get(i).getCellMName();
@@ -260,6 +367,12 @@ public class ReadTag extends AppCompatActivity {
                 Modelname = modelList.get(i).getPVModule();
                 LAb = modelList.get(i).getIECLab();
                 QualityCertificate = modelList.get(i).getCellCountry();
+                t1.setText(Pvmanufacture);
+                t2.setText(cellManufacture);
+                t3.setText(PVMonth);
+                t4.setText(CellMonth);
+                t5.setText(QualityCertificate);
+                Check();
             }
         }
     }
@@ -948,7 +1061,10 @@ public class ReadTag extends AppCompatActivity {
 
         // below line is used to set the name of
         // our PDF file and its path.
-        File file = new File(Environment.getExternalStorageDirectory(), "Solar.pdf");
+        Date d = new Date();
+        CharSequence s = DateFormat.format("yyyy-MM-dd HH:mm:ss", d.getTime());
+        String serialNO = TagId.concat(s.toString());
+        File file = new File(Environment.getExternalStorageDirectory(), serialNO + " SolarPdfReadTag.pdf");
 
         try {
             // after creating a file name we will
@@ -978,128 +1094,82 @@ public class ReadTag extends AppCompatActivity {
     }
 
     public void Check() {
-v = ExcelGenerate.isChecked();
-        Toast.makeText(this, ""+v, Toast.LENGTH_SHORT).show();
-        ExcelGenerate.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    createExcelSheet();
-                }
+        if (ExcelGenerate.isChecked()) {
+            if (filepath.exists()) {
+                UpdateExcel();
+            } else {
+                createExcelSheet();
             }
-        });
-        PdfGenerate.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    generatePDF();
-                }
-            }
-        });
+//
+//
+        }
+        if (PdfGenerate.isChecked()) {
+            generatePDF();
+        }
+
     }
-//
-//    private void FetchData() throws JSONException {
-//
-//        String url = "http://164.52.223.163:4502/api/GetbyId";
-//        JSONObject obj = new JSONObject();
-//        obj.put("serialNo", "A");
-//        obj.put("moduleId", "22410951");
-//        obj.put("formateid", "1");
-//
-//        RequestQueue queue = Volley.newRequestQueue(this);
-//
-//
-//        final String requestBody = obj.toString();
-//
-//        StringRequest stringRequest = new StringRequest(Request.Method.POST, url, response -> {
-//            Toast.makeText(ReadTag.this, "Successfully" + response, Toast.LENGTH_LONG).show();
-//
-//            try {
-//                JSONObject object = new JSONObject(response);
-//                JSONArray technicleSettings = object.getJSONArray("technicleSettings_Information");
-//                JSONObject object1 = (JSONObject) technicleSettings.get(0);
-//                String SerialNo = object1.getString("Serial number");
-//                String date = object1.getString("date");
-//                String Pmaxnew = object1.getString("Pmax");
-//                String Time = object1.getString("time");
-//                String FillFactor = object1.getString("Fill Factor");
-//                String Voc = object1.getString("Voc");
-//                String Isc = object1.getString("Isc");
-//                String Vmp = object1.getString("Vmp");
-//                String Imp = object1.getString("Imp");
-//                String Rs = object1.getString("Rs");
-//                String Rsh = object1.getString("Rsh");
-//                String CEff = object1.getString("C.Eff");
-//                String MTemp = object1.getString("M.Temp");
-//                String RefVoltage = object1.getString("RefVoltage");
-//                String RefCurent = object1.getString("RefCurent");
-//                String RefPmax = object1.getString("RefPmax");
-//                String Irra = object1.getString("Irra");
-//                String Binnumber = object1.getString("Bin number");
-//
-//
-//                PopulateGraphValue(Double.parseDouble(Vmp.trim()),
-//                        Double.parseDouble(Imp.trim()),
-//                        Double.parseDouble(Voc.trim()),
-//                        Double.parseDouble(Isc.trim()));
-//                JSONArray companySettings = object.getJSONArray("companySettings_Information");
-//                JSONObject object2 = companySettings.getJSONObject(0);
-//
-//                String Sno = object2.getString("Sno");
-//                String ModuleID = object2.getString("Module ID");
-//                String PVMdlNumber = object2.getString("PV Model Number");
-//                String CellMfgName = object2.getString("Cell Mfg Name");
-//                String CellMfgCuntry = object2.getString("Cell Mfg Cuntry");
-//                String CellMfgDate = object2.getString("Cell Mfg Date");
-//                String ModuleMfg = object2.getString("Module Mfg");
-//                String ModuleMfgCountry = object2.getString("Module Mfg Country");
-//                String ModuleMfgDate = object2.getString("Module Mfg Date");
-//                String IECLab = object2.getString("IEC Lab");
-//
-//
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//            }
-//            Log.i("VOLLEY", response);
-////            dialog.dismiss();
-//        }, error -> {
-////            Log.e("VOLLEY Negative", String.valueOf(error.networkResponse.statusCode));
-//            Toast.makeText(ReadTag.this, "Error Message" + error.getMessage(), Toast.LENGTH_SHORT).show();
-////            if (error.networkResponse.statusCode == 404) {
-////                Toast.makeText(ReadTag.this, "No Result Found", Toast.LENGTH_SHORT).show();
-////            } else if (error.networkResponse.statusCode == 400) {
-////                Toast.makeText(ReadTag.this, "Bad Request", Toast.LENGTH_SHORT).show();
-////            } else {
-////                Toast.makeText(ReadTag.this, "Unable to process the request", Toast.LENGTH_SHORT).show();
-////
-////            }
-//        }) {
 
-//            @Override
-//            public String getBodyContentType() {
-//                return "application/json; charset=utf-8";
-//            }
-//
-//            @Override
-//            public byte[] getBody() throws AuthFailureError {
-//                try {
-//                    return requestBody == null ? null : requestBody.getBytes("utf-8");
-//                } catch (UnsupportedEncodingException uee) {
-//                    VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", requestBody, "utf-8");
-//                    return null;
-//                }
-//            }
-//
-//            @Override
-//            protected Response<String> parseNetworkResponse(NetworkResponse response) {
-//
-//                return super.parseNetworkResponse(response);
-//            }
-//        };
-////        stringRequest.setRetryPolicy(new DefaultRetryPolicy(5, 2,
-////                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-//        queue.add(stringRequest);
-//    }
 
+    public void UpdateExcel() {
+//        File xlsxFile = new File(filepath);
+
+        //New students records to update in excel file
+        Object[][] newStudents = {
+                {SerialId, pmax1, Vmax1, IPMAx1, ISC1, ISC1, FF},
+        };
+
+        try {
+            //Creating input stream
+            FileInputStream inputStream = new FileInputStream(filepath);
+
+            //Creating workbook from input stream
+            Workbook workbook = WorkbookFactory.create(inputStream);
+
+            //Reading first sheet of excel file
+            Sheet sheet = workbook.getSheetAt(0);
+
+            //Getting the count of existing records
+            int rowCount = sheet.getLastRowNum();
+
+            //Iterating new students to update
+            for (Object[] student : newStudents) {
+
+                //Creating new row from the next row count
+                Row row = sheet.createRow(++rowCount);
+
+                int columnCount = 0;
+
+                //Iterating student informations
+                for (Object info : student) {
+
+                    //Creating new cell and setting the value
+                    Cell cell = row.createCell(columnCount++);
+                    if (info instanceof String) {
+                        cell.setCellValue((String) info);
+                    } else if (info instanceof Integer) {
+                        cell.setCellValue((Integer) info);
+                    }
+                }
+            }
+            //Close input stream
+            inputStream.close();
+
+            //Crating output stream and writing the updated workbook
+            FileOutputStream os = new FileOutputStream(filepath);
+            workbook.write(os);
+
+            //Close the workbook and output stream
+            workbook.close();
+            os.close();
+            Toast.makeText(ReadTag.this, "Excel file has been updated successfully.", Toast.LENGTH_SHORT).show();
+            System.out.println("Excel file has been updated successfully.");
+
+        } catch (EncryptedDocumentException | IOException e) {
+            System.err.println("Exception while updating an existing excel file.");
+            Toast.makeText(ReadTag.this, "Exception while updating an existing excel file.", Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+        }
+
+    }
 
 }

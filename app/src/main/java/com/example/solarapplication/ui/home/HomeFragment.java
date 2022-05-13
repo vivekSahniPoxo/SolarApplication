@@ -36,28 +36,33 @@ public class HomeFragment extends Fragment {
         recyclerView = root.findViewById(R.id.Recyclerview_Country);
         Country = root.findViewById(R.id.CountryName);
         btnSave = root.findViewById(R.id.BtnSave);
-        localDB=new LocalDB(getContext());
+        localDB = new LocalDB(getContext());
         //Array List Initial
-        list=new ArrayList<>();
+        list = new ArrayList<>();
 
+        SetupRecycelerview();
+
+        btnSave.setOnClickListener(v -> {
+            localDB.addContact(new DataModelClass(Country.getText().toString().trim()));
+            Country.setText("");
+            SetupRecycelerview();
+
+        });
+        return root;
+    }
+
+    private void SetupRecycelerview() {
         //Getting Local DB Data in List
         list = localDB.getAllContacts();
         //Setting Data in List
-        if (list.size()>0) {
+        if (list.size() > 0) {
             adapterCountry = new AdapterCountry(list, getActivity());
             recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
             recyclerView.setAdapter(adapterCountry);
             adapterCountry.notifyDataSetChanged();
-        }
-        else {
+        } else {
             Toast.makeText(getContext(), "No Data Available...", Toast.LENGTH_SHORT).show();
         }
-        btnSave.setOnClickListener(v -> {
-            localDB.addContact(new DataModelClass(Country.getText().toString().trim()));
-            Country.setText("");
-
-        });
-        return root;
     }
 
     @Override

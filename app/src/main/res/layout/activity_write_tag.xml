@@ -55,8 +55,7 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            >
+            android:layout_height="match_parent">
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardView5"
@@ -119,13 +118,13 @@
                         android:id="@+id/button_Scan"
                         android:layout_width="0dp"
                         android:layout_height="60dp"
-
                         android:layout_marginStart="16dp"
                         android:layout_marginEnd="16dp"
                         android:layout_marginBottom="8dp"
                         android:background="@drawable/custom_btn"
                         android:text="Tap TO Scan"
                         android:textColor="@color/white"
+                        android:visibility="gone"
                         app:cardCornerRadius="5dp"
                         app:cardElevation="10dp"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -183,10 +182,10 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="16dp"
-                android:layout_marginBottom="16dp"
+                android:layout_marginBottom="8dp"
                 app:cardCornerRadius="10dp"
                 app:cardElevation="5dp"
-                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintBottom_toTopOf="@+id/cardView11"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/cardView5">
@@ -202,8 +201,10 @@
                         android:layout_height="match_parent"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHorizontal_bias="1.0"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent">
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintVertical_bias="0.0">
 
                         <androidx.constraintlayout.widget.ConstraintLayout
                             android:layout_width="match_parent"
@@ -610,18 +611,32 @@
                                 app:layout_constraintStart_toEndOf="@+id/textView29"
                                 app:layout_constraintTop_toBottomOf="@+id/Voc" />
 
+                            <CheckBox
+                                android:id="@+id/ViewAllData"
+                                android:layout_width="0dp"
+                                android:layout_height="40dp"
+                                android:layout_margin="5dp"
+                                android:layout_marginEnd="8dp"
+                                android:text="Generate Excel"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintTop_toTopOf="parent" />
+
                             <TextView
                                 android:id="@+id/textView10"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:text="@string/Heading"
+                                android:layout_marginTop="16dp"
+                                android:layout_marginBottom="8dp"
+                                android:text="Details"
                                 android:textAlignment="center"
                                 android:textColor="#0080ff"
                                 android:textSize="18dp"
                                 android:textStyle="bold"
+                                app:layout_constraintBottom_toTopOf="@+id/textView12"
                                 app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintHorizontal_bias="1.0"
                                 app:layout_constraintStart_toStartOf="parent"
-                                app:layout_constraintTop_toTopOf="parent" />
+                                app:layout_constraintTop_toBottomOf="@+id/ViewAllData" />
 
                             <TextView
                                 android:id="@+id/textView13"
@@ -732,37 +747,6 @@
                                 app:layout_constraintStart_toEndOf="@+id/textView32"
                                 app:layout_constraintTop_toBottomOf="@+id/FillFactor" />
 
-                            <Button
-                                android:id="@+id/ViewAllData"
-                                android:layout_width="0dp"
-                                android:layout_height="40dp"
-
-                                android:layout_marginStart="16dp"
-                                android:layout_marginTop="16dp"
-                                android:layout_marginEnd="16dp"
-                                android:background="@drawable/custom_btn"
-                                android:text="Generate Excel"
-                                android:textColor="@color/white"
-                                app:layout_constraintBottom_toBottomOf="parent"
-                                app:layout_constraintEnd_toEndOf="parent"
-                                app:layout_constraintStart_toEndOf="@+id/ViewGraph"
-                                app:layout_constraintTop_toBottomOf="@+id/ISC" />
-
-                            <Button
-                                android:id="@+id/ViewGraph"
-                                android:layout_width="0dp"
-                                android:layout_height="40dp"
-
-                                android:layout_marginStart="16dp"
-                                android:layout_marginTop="16dp"
-                                android:layout_marginEnd="16dp"
-                                android:background="@drawable/custom_btn"
-                                android:text="View Graph"
-                                android:textColor="@color/white"
-                                app:layout_constraintBottom_toBottomOf="parent"
-                                app:layout_constraintEnd_toStartOf="@+id/ViewAllData"
-                                app:layout_constraintStart_toStartOf="parent"
-                                app:layout_constraintTop_toBottomOf="@+id/textView32" />
 
                         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -770,6 +754,30 @@
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </androidx.cardview.widget.CardView>
 
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardView11"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/cardView3">
+
+
+                <Button
+                    android:id="@+id/ViewGraph"
+                    android:layout_width="300dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center"
+                    android:layout_margin="10dp"
+                    android:background="@drawable/custom_btn"
+                    android:text="View Graph"
+                    android:textColor="@color/white" />
+
+
+            </androidx.cardview.widget.CardView>
         </androidx.constraintlayout.widget.ConstraintLayout>
 
 

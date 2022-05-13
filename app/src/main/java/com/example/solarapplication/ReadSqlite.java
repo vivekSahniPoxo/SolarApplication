@@ -15,12 +15,12 @@ import android.graphics.pdf.PdfDocument;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.text.format.DateFormat;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -39,45 +39,52 @@ import com.speedata.libuhf.UHFManager;
 import com.speedata.libuhf.bean.SpdInventoryData;
 import com.speedata.libuhf.interfaces.OnSpdInventoryListener;
 
+import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class ReadSqlite extends AppCompatActivity {
     GraphView linegraph;
     int pageHeight = 2200;
     int pagewidth = 1800;
-    String TagId, Pvmanufacture, cellManufacture, PVMonth, CellMonth, PVcountry, CellCountry, QualityCertificate, LAb, Modelname;
     CheckBox ExcelGenerate, PdfGenerate;
     Bitmap bmp, scaledbmp;
-    File filepath = new File(Environment.getExternalStorageDirectory() + "/SolarExcel.xls");
+    File filepath = new File(Environment.getExternalStorageDirectory() + "/SolarLocalExcel.xls");
     Button ViewDetails;
     IUHFService iuhfService;
     CardView cardView;
-    String FF, pmax1, Vmax1, IPMAx1, VOC1, ISC1;
+    String FF, pmax1, Vmax1, IPMAx1, VOC1, ISC1,Idq;
     List<ReadList> readLists;
     String SerialId;
     Double V1, V2, V3, V4, V5, V6, V7, V8, V9, V10, C1, C2, C3, C10, C4, C5, C6, C7, C8, C9;
     String ID;
     List<ReportModelClass> modelList;
-    boolean v;
+    String TagId, pdfPVManuName, pdfPVmodleName, pdfCellManuName, pdfDatePv, pdfDateCell, pdfLabName, pdfDateLab, pdfCountryPv, pdfcountrycell;
     public TextView t1, t2, t3, t4, t5, t6, t7, t8, t9;
     ReportDb reportDb;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_read_sqlite);   t1 = findViewById(R.id.Booktitle);
+        setContentView(R.layout.activity_read_sqlite);
+        t1 = findViewById(R.id.Booktitle);
         t2 = findViewById(R.id.SolarCell);
         t3 = findViewById(R.id.MonthPV);
         t4 = findViewById(R.id.MonthSolar);
@@ -85,6 +92,7 @@ public class ReadSqlite extends AppCompatActivity {
         t5 = findViewById(R.id.IECcertificate);
         PdfGenerate = findViewById(R.id.GeneratePDf);
         ExcelGenerate = findViewById(R.id.GenerateExcel);
+
 
         iuhfService = UHFManager.getUHFService(this);
         iuhfService.openDev();
@@ -99,7 +107,7 @@ public class ReadSqlite extends AppCompatActivity {
                 checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
         }
-         reportDb=new ReportDb(this);
+        reportDb = new ReportDb(this);
         modelList = new ArrayList<>();
         readLists = new ArrayList<>();
 
@@ -108,15 +116,11 @@ public class ReadSqlite extends AppCompatActivity {
         cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ReadData();
-                modelList = reportDb.getAllContacts();
 
+
+                ReadData();
             }
         });
-//        Check();
-
-//
-
         linegraph = (GraphView) findViewById(R.id.line_graph);
         ViewDetails.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -140,34 +144,30 @@ public class ReadSqlite extends AppCompatActivity {
                 TextView FillFactor = dailogbox.findViewById(R.id.FillFactor);
                 TextView ISC = dailogbox.findViewById(R.id.ISC);
 
-                for (int i = 0; i < modelList.size(); i++) {
-                    if (ID.substring(2).matches(modelList.get(i).getID())) {
-                        FillFactor.setText(FF);
-                        Vmax.setText(Vmax1);
-                        ISC.setText(ISC1);
-                        Voc.setText(VOC1);
-                        Pmax.setText(pmax1);
-                        Imax.setText(IPMAx1);
-                        manufactureNamePV.setText(modelList.get(i).getPVManuName());
-                        ModuleName.setText(modelList.get(i).getPVmodleName());
-                        SerialModule.setText(SerialId);
-                        manufactureNameSolar.setText(modelList.get(i).getCellManuName());
-                        MonthPV.setText(modelList.get(i).getDatePv());
-                        MonthSolar.setText(modelList.get(i).getDateCell());
-                        IECcertificate.setText(modelList.get(i).getLabName());
-                        DateIEC.setText(modelList.get(i).getDateLab());
-                        OriginCountry.setText(modelList.get(i).getCountryPv());
-                        OriginSolar.setText(modelList.get(i).getCountryCell());
-
-                    }
-                }
                 FillFactor.setText(FF);
                 Vmax.setText(Vmax1);
                 ISC.setText(ISC1);
                 Voc.setText(VOC1);
                 Pmax.setText(pmax1);
                 Imax.setText(IPMAx1);
-//                t7.setText(model_search.getTagID());
+                manufactureNamePV.setText(pdfPVManuName);
+                ModuleName.setText(pdfPVmodleName);
+                SerialModule.setText(SerialId);
+                manufactureNameSolar.setText(pdfCellManuName);
+                MonthPV.setText(pdfDatePv);
+                MonthSolar.setText(pdfDateCell);
+                IECcertificate.setText(pdfLabName);
+                DateIEC.setText(pdfDateLab);
+                OriginCountry.setText(pdfCountryPv);
+                OriginSolar.setText(pdfcountrycell);
+
+
+                FillFactor.setText(FF);
+                Vmax.setText(Vmax1);
+                ISC.setText(ISC1);
+                Voc.setText(VOC1);
+                Pmax.setText(pmax1);
+                Imax.setText(IPMAx1);
 
                 builder.setView(dailogbox);
                 builder.setCancelable(true);
@@ -194,27 +194,28 @@ public class ReadSqlite extends AppCompatActivity {
     }
 
     private void SetDAta(String hex) {
+        modelList = reportDb.getAllContacts();
         String vv = hex.substring(18, 46);
         System.out.print("VALUE OF DATA " + vv);
         byte[] bytes = hexStringToByteArray(vv);
         SerialId = new String(bytes, StandardCharsets.UTF_8);
-        t1.setText(SerialId);
+//        t1.setText(SerialId);
 
         ID = hex.substring(46, 49);
-
-        t2.setText(ID);
+     Idq=ID.substring(2);
+//        t2.setText(ID);
         Integer p = Integer.parseInt(hex.substring(49, 52));
         String max = hex.substring(52, 54);
         pmax1 = p + "." + max;
-        t3.setText(pmax1);
+//        t3.setText(pmax1);
         Integer V = Integer.parseInt(hex.substring(54, 56));
         String max1 = hex.substring(56, 58);
         Vmax1 = V + "." + max1;
-        t4.setText(Vmax1);
+//        t4.setText(Vmax1);
         Integer IP = Integer.parseInt(hex.substring(59, 60));
         String max2 = hex.substring(60, 62);
         IPMAx1 = IP + "." + max2;
-        t5.setText(IPMAx1);
+//        t5.setText(IPMAx1);
         Integer F1 = Integer.parseInt(hex.substring(63, 65));
         String F2 = hex.substring(65, 67);
         FF = F1 + "." + F2;
@@ -224,36 +225,29 @@ public class ReadSqlite extends AppCompatActivity {
         Integer IS = Integer.parseInt(hex.substring(71, 73));
         String C = hex.substring(73, 75);
         ISC1 = IS + "." + C;
-//        t8.setText("ISC: " + ISC);
         PopulateGraphValue(Double.parseDouble(Vmax1), Double.parseDouble(IPMAx1), Double.parseDouble(VOC1), Double.parseDouble(ISC1));
-//        SetData(ID.substring(2));
         for (int i = 0; i < modelList.size(); i++) {
             if (ID.substring(2).matches(modelList.get(i).getID())) {
-                t1.setText(SerialId);
-                Check();
+
+                pdfPVManuName = modelList.get(i).getPVManuName();
+                pdfPVmodleName = modelList.get(i).getPVmodleName();
+                pdfCellManuName = modelList.get(i).getCellManuName();
+                pdfDatePv = modelList.get(i).getDatePv();
+                pdfDateCell = modelList.get(i).getDateCell();
+                pdfLabName = modelList.get(i).getLabName();
+                pdfDateLab = modelList.get(i).getDateLab();
+                pdfCountryPv = modelList.get(i).getCountryPv();
+                pdfcountrycell = modelList.get(i).getCountryPv();
+                SerialId = modelList.get(i).getID();
 //                generatePDF();
-                t2.setText(modelList.get(i).getPVManuName());
-                t3.setText(pmax1);
-                t4.setText(Vmax1);
-                t5.setText(IPMAx1);
-                Pvmanufacture = modelList.get(i).getPVManuName();
-                cellManufacture = modelList.get(i).getCellManuName();
-                PVMonth = modelList.get(i).getDatePv();
-                CellMonth = modelList.get(i).getDateCell();
-                PVcountry = modelList.get(i).getCountryPv();
-                CellCountry = modelList.get(i).getCountryCell();
-                Modelname = modelList.get(i).getPVmodleName();
-                LAb = modelList.get(i).getDateLab();
-                QualityCertificate = modelList.get(i).getLabName();
+                Check();
+                t1.setText(pdfPVManuName);
+                t2.setText(pdfCellManuName);
+                t3.setText(pdfDatePv);
+                t4.setText(pdfDateCell);
+                t5.setText(pdfLabName);
             }
         }
-    }
-
-
-    private static String getValue(String tag, Element element) {
-        NodeList nodeList = element.getElementsByTagName(tag).item(0).getChildNodes();
-        Node node = nodeList.item(0);
-        return node.getNodeValue();
     }
 
     public static byte[] hexStringToByteArray(String hex) {
@@ -835,14 +829,14 @@ public class ReadSqlite extends AppCompatActivity {
         canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 285, title);
 
         canvas.drawText("PV Module Manufacture Name", xhead, 310, title);
-        canvas.drawText(Pvmanufacture, xdata, 310, title);
+        canvas.drawText(pdfPVManuName, xdata, 310, title);
         canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 335, title);
 
         canvas.drawText("Month & Year of Pv Module Manufacture", xhead, 360, title);
-        canvas.drawText(PVMonth, xdata, 360, title);
+        canvas.drawText(pdfDatePv, xdata, 360, title);
         canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 385, title);
         canvas.drawText("Country of Origin of Pv Module ", xhead, 410, title);
-        canvas.drawText(Pvmanufacture, xdata, 410, title);
+        canvas.drawText(pdfCountryPv, xdata, 410, title);
         canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 435, title);
 
         canvas.drawText("Unique Serial number of the Module ", xhead, 460, title);
@@ -850,7 +844,7 @@ public class ReadSqlite extends AppCompatActivity {
         canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 485, title);
 
         canvas.drawText("Model Type", xhead, 510, title);
-        canvas.drawText(Modelname, xdata, 510, title);
+        canvas.drawText(pdfPVmodleName, xdata, 510, title);
         canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 535, title);
 
         canvas.drawText("Max Wattage of the Module (P-max)", xhead, 560, title);
@@ -878,23 +872,23 @@ public class ReadSqlite extends AppCompatActivity {
         canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 835, title);
 
         canvas.drawText("Name of the Manufacture of Solar Cell", xhead, 860, title);
-        canvas.drawText(cellManufacture, xdata, 860, title);
+        canvas.drawText(pdfCellManuName, xdata, 860, title);
         canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 885, title);
 
         canvas.drawText("Month & Year of Solar Cell Manufacture", xhead, 910, title);
-        canvas.drawText(CellMonth, xdata, 910, title);
+        canvas.drawText(pdfDateCell, xdata, 910, title);
         canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 935, title);
 
         canvas.drawText("Country of Origin Cell", xhead, 960, title);
-        canvas.drawText(CellCountry, xdata, 960, title);
+        canvas.drawText(pdfcountrycell, xdata, 960, title);
         canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 985, title);
 
         canvas.drawText("Date & Year of IEC Pv Module Qualification Certificate", xhead, 1010, title);
-        canvas.drawText(QualityCertificate, xdata, 1010, title);
+        canvas.drawText(pdfDateLab, xdata, 1010, title);
         canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 1035, title);
 
         canvas.drawText("Name of the test lab Issuing IEC  Certificate", xhead, 1060, title);
-        canvas.drawText(LAb, xdata, 1060, title);
+        canvas.drawText(pdfLabName, xdata, 1060, title);
 
         // after adding all attributes to our
         // PDF file we will be finishing our page.
@@ -902,7 +896,10 @@ public class ReadSqlite extends AppCompatActivity {
 
         // below line is used to set the name of
         // our PDF file and its path.
-        File file = new File(Environment.getExternalStorageDirectory(), "Solar.pdf");
+        Date d = new Date();
+        CharSequence s  = DateFormat.format("yyyy-MM-dd HH:mm:ss", d.getTime());
+        String serialNO=SerialId.concat(s.toString());
+        File file = new File(Environment.getExternalStorageDirectory(), serialNO.concat((String) s)+" LocalSolar.pdf");
 
         try {
             // after creating a file name we will
@@ -932,128 +929,76 @@ public class ReadSqlite extends AppCompatActivity {
     }
 
     public void Check() {
-        v = ExcelGenerate.isChecked();
-        Toast.makeText(this, ""+v, Toast.LENGTH_SHORT).show();
-        ExcelGenerate.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    createExcelSheet();
-                }
+        if (ExcelGenerate.isChecked()) {
+            if (filepath.exists()) {
+                UpdateExcel();
+            } else {
+                createExcelSheet();
             }
-        });
-        PdfGenerate.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    generatePDF();
-                }
+        }
+            if (PdfGenerate.isChecked()) {
+                generatePDF();
             }
-        });
+
+
     }
-//
-//    private void FetchData() throws JSONException {
-//
-//        String url = "http://164.52.223.163:4502/api/GetbyId";
-//        JSONObject obj = new JSONObject();
-//        obj.put("serialNo", "A");
-//        obj.put("moduleId", "22410951");
-//        obj.put("formateid", "1");
-//
-//        RequestQueue queue = Volley.newRequestQueue(this);
-//
-//
-//        final String requestBody = obj.toString();
-//
-//        StringRequest stringRequest = new StringRequest(Request.Method.POST, url, response -> {
-//            Toast.makeText(ReadTag.this, "Successfully" + response, Toast.LENGTH_LONG).show();
-//
-//            try {
-//                JSONObject object = new JSONObject(response);
-//                JSONArray technicleSettings = object.getJSONArray("technicleSettings_Information");
-//                JSONObject object1 = (JSONObject) technicleSettings.get(0);
-//                String SerialNo = object1.getString("Serial number");
-//                String date = object1.getString("date");
-//                String Pmaxnew = object1.getString("Pmax");
-//                String Time = object1.getString("time");
-//                String FillFactor = object1.getString("Fill Factor");
-//                String Voc = object1.getString("Voc");
-//                String Isc = object1.getString("Isc");
-//                String Vmp = object1.getString("Vmp");
-//                String Imp = object1.getString("Imp");
-//                String Rs = object1.getString("Rs");
-//                String Rsh = object1.getString("Rsh");
-//                String CEff = object1.getString("C.Eff");
-//                String MTemp = object1.getString("M.Temp");
-//                String RefVoltage = object1.getString("RefVoltage");
-//                String RefCurent = object1.getString("RefCurent");
-//                String RefPmax = object1.getString("RefPmax");
-//                String Irra = object1.getString("Irra");
-//                String Binnumber = object1.getString("Bin number");
-//
-//
-//                PopulateGraphValue(Double.parseDouble(Vmp.trim()),
-//                        Double.parseDouble(Imp.trim()),
-//                        Double.parseDouble(Voc.trim()),
-//                        Double.parseDouble(Isc.trim()));
-//                JSONArray companySettings = object.getJSONArray("companySettings_Information");
-//                JSONObject object2 = companySettings.getJSONObject(0);
-//
-//                String Sno = object2.getString("Sno");
-//                String ModuleID = object2.getString("Module ID");
-//                String PVMdlNumber = object2.getString("PV Model Number");
-//                String CellMfgName = object2.getString("Cell Mfg Name");
-//                String CellMfgCuntry = object2.getString("Cell Mfg Cuntry");
-//                String CellMfgDate = object2.getString("Cell Mfg Date");
-//                String ModuleMfg = object2.getString("Module Mfg");
-//                String ModuleMfgCountry = object2.getString("Module Mfg Country");
-//                String ModuleMfgDate = object2.getString("Module Mfg Date");
-//                String IECLab = object2.getString("IEC Lab");
-//
-//
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//            }
-//            Log.i("VOLLEY", response);
-////            dialog.dismiss();
-//        }, error -> {
-////            Log.e("VOLLEY Negative", String.valueOf(error.networkResponse.statusCode));
-//            Toast.makeText(ReadTag.this, "Error Message" + error.getMessage(), Toast.LENGTH_SHORT).show();
-////            if (error.networkResponse.statusCode == 404) {
-////                Toast.makeText(ReadTag.this, "No Result Found", Toast.LENGTH_SHORT).show();
-////            } else if (error.networkResponse.statusCode == 400) {
-////                Toast.makeText(ReadTag.this, "Bad Request", Toast.LENGTH_SHORT).show();
-////            } else {
-////                Toast.makeText(ReadTag.this, "Unable to process the request", Toast.LENGTH_SHORT).show();
-////
-////            }
-//        }) {
 
-//            @Override
-//            public String getBodyContentType() {
-//                return "application/json; charset=utf-8";
-//            }
-//
-//            @Override
-//            public byte[] getBody() throws AuthFailureError {
-//                try {
-//                    return requestBody == null ? null : requestBody.getBytes("utf-8");
-//                } catch (UnsupportedEncodingException uee) {
-//                    VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", requestBody, "utf-8");
-//                    return null;
-//                }
-//            }
-//
-//            @Override
-//            protected Response<String> parseNetworkResponse(NetworkResponse response) {
-//
-//                return super.parseNetworkResponse(response);
-//            }
-//        };
-////        stringRequest.setRetryPolicy(new DefaultRetryPolicy(5, 2,
-////                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-//        queue.add(stringRequest);
-//    }
+    private void UpdateExcel() {
+        Object[][] newStudents = {
+                {SerialId, pmax1, Vmax1, IPMAx1, ISC1, ISC1, FF},
+        };
 
+        try {
+            //Creating input stream
+            FileInputStream inputStream = new FileInputStream(filepath);
 
+            //Creating workbook from input stream
+            Workbook workbook = WorkbookFactory.create(inputStream);
+
+            //Reading first sheet of excel file
+            Sheet sheet = workbook.getSheetAt(0);
+
+            //Getting the count of existing records
+            int rowCount = sheet.getLastRowNum();
+
+            //Iterating new students to update
+            for (Object[] student : newStudents) {
+
+                //Creating new row from the next row count
+                Row row = sheet.createRow(++rowCount);
+
+                int columnCount = 0;
+
+                //Iterating student informations
+                for (Object info : student) {
+
+                    //Creating new cell and setting the value
+                    Cell cell = row.createCell(columnCount++);
+                    if (info instanceof String) {
+                        cell.setCellValue((String) info);
+                    } else if (info instanceof Integer) {
+                        cell.setCellValue((Integer) info);
+                    }
+                }
+            }
+            //Close input stream
+            inputStream.close();
+
+            //Crating output stream and writing the updated workbook
+            FileOutputStream os = new FileOutputStream(filepath);
+            workbook.write(os);
+
+            //Close the workbook and output stream
+            workbook.close();
+            os.close();
+            Toast.makeText(ReadSqlite.this, "Excel file has been updated successfully.", Toast.LENGTH_SHORT).show();
+            System.out.println("Excel file has been updated successfully.");
+
+        } catch (EncryptedDocumentException | IOException e) {
+            System.err.println("Exception while updating an existing excel file.");
+            Toast.makeText(ReadSqlite.this, "Exception while updating an existing excel file.", Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+        }
+
+    }
 }

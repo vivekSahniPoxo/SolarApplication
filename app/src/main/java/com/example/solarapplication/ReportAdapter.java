@@ -4,6 +4,7 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TableLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -14,9 +15,11 @@ import java.util.List;
 public class ReportAdapter extends RecyclerView.Adapter<ReportAdapter.MyviewHolder> {
     List<ReportModelClass> list;
     Context context;
+    private ReportListener reportListener;
 
-    public ReportAdapter(List<ReportModelClass> list, Context context) {
+    public ReportAdapter(List<ReportModelClass> list, Context context, ReportListener reportListener) {
         this.list = list;
+        this.reportListener = reportListener;
         this.context = context;
     }
 
@@ -44,7 +47,6 @@ public class ReportAdapter extends RecyclerView.Adapter<ReportAdapter.MyviewHold
         holder.DateLab.setText(reportModelClass.getDateLab());
 
 
-
     }
 
     @Override
@@ -53,10 +55,13 @@ public class ReportAdapter extends RecyclerView.Adapter<ReportAdapter.MyviewHold
     }
 
     public class MyviewHolder extends RecyclerView.ViewHolder {
-        TextView id,PVManuName,PVmodleName,CellManuName,LabName,Warranty,CountryPv,CountryCell,DateCell,DatePv,DateLab;
+        TextView id, PVManuName, PVmodleName, CellManuName, LabName, Warranty, CountryPv, CountryCell, DateCell, DatePv, DateLab;
+        TableLayout layout;
+
         public MyviewHolder(@NonNull View itemView) {
             super(itemView);
             id = itemView.findViewById(R.id.Id);
+            layout = itemView.findViewById(R.id.Myreportlayout);
             PVManuName = itemView.findViewById(R.id.pvnamemanu);
             PVmodleName = itemView.findViewById(R.id.pvmodel);
             CellManuName = itemView.findViewById(R.id.cellmanuname);
@@ -68,7 +73,27 @@ public class ReportAdapter extends RecyclerView.Adapter<ReportAdapter.MyviewHold
             DatePv = itemView.findViewById(R.id.datepv);
             DateLab = itemView.findViewById(R.id.datecertificate);
 
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    reportListener.onItemClick(getAdapterPosition());
+                }
+            });
 
         }
+    }
+
+    public void removeItem(int position) {
+        list.remove(position);
+        notifyItemRemoved(position);
+    }
+
+    public void restoreItem(ReportModelClass item, int position) {
+        list.add(position, item);
+        notifyItemInserted(position);
+    }
+
+    public List<ReportModelClass> getData() {
+        return list;
     }
 }

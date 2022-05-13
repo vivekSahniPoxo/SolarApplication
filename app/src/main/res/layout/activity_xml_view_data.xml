@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".GraphViewData">
+    tools:context=".XmlViewData">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraintLayout"
@@ -380,7 +380,7 @@
                         android:id="@+id/GeneratePDF"
                         android:layout_width="0dp"
                         android:layout_height="40dp"
-android:enabled="false"
+                        android:enabled="false"
                         android:layout_marginStart="16dp"
                         android:layout_marginTop="16dp"
                         android:layout_marginEnd="16dp"

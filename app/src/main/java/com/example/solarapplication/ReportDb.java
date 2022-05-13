@@ -11,9 +11,9 @@ import java.util.List;
 
 public class ReportDb extends SQLiteOpenHelper {
     private static final int DATABASE_VERSION = 1;
-    private static final String DATABASE_NAME = "NewSolarDataBaseReport";
+    public static final String DATABASE_NAME = "NewSolarDataBaseReport";
     private static final String TABLE_Report = "DataReport1";
-    private static final String ID = "ID";
+    public static final String ID = "ID";
     private static final String PVManuName = "PVManufactureName";
     private static final String PVmodleName = "PVmodelName";
     private static final String CellManuName = "CellManufactureName";
@@ -148,24 +148,46 @@ public class ReportDb extends SQLiteOpenHelper {
 
 
     // Deleting single contact
-    public void deleteContact(ReportModelClass contact) {
+//    public void deleteContact(ReportModelClass contact) {
+//        SQLiteDatabase db = this.getWritableDatabase();
+//        db.delete(TABLE_Report, ID + " = ?",
+//                new String[]{String.valueOf(contact.getID())});
+//        db.close();
+//    }
+    public void deleteRow(String value) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(TABLE_Report, ID + " = ?",
-                new String[]{String.valueOf(contact.getID())});
+        db.execSQL("DELETE FROM " + TABLE_Report + " WHERE " + ID + "='" + value + "'");
         db.close();
     }
 
-    //Method for Update
-//    public int updateContact(ReportModelClass contact) {
+    //    public void delete(int position) {
+//
 //        SQLiteDatabase db = this.getWritableDatabase();
+//        String table = TABLE_Report;
+//        String whereClause = ID;
+//        String [] whereArgs = new String[] {String.valueOf(position)};
+//        db.delete (table, whereClause, whereArgs);
 //
-//        ContentValues values = new ContentValues();
-//        values.put(KEY_NAME, contact.getName());
-//        values.put(KEY_PH_NO, contact.getPhoneNumber());
-//
-//        // updating row
-//        return db.update(TABLE_CONTACTS, values, KEY_ID + " = ?",
-//                new String[] { String.valueOf(contact.getID()) });
 //    }
+    //Method for Update
+    public int updateContact(ReportModelClass dataModelClass, String valueID) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(PVManuName, dataModelClass.getPVManuName());
+        values.put(PVmodleName, dataModelClass.getPVmodleName());
+        values.put(CellManuName, dataModelClass.getCellManuName());
+        values.put(LabName, dataModelClass.getLabName());
+        values.put(Warranty, dataModelClass.getWarranty());
+        values.put(CountryPv, dataModelClass.getCountryPv());
+        values.put(CountryCell, dataModelClass.getCountryCell());
+        values.put(DateCell, dataModelClass.getDateCell());
+        values.put(DatePv, dataModelClass.getDatePv());
+        values.put(DateLab, dataModelClass.getDateLab());
+
+        // updating row
+        return db.update(TABLE_Report, values, ID + " = ?",
+                new String[]{String.valueOf(valueID)});
+    }
 
 }

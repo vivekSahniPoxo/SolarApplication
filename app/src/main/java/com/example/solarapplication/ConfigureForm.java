@@ -1,7 +1,11 @@
 package com.example.solarapplication;
 
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -11,7 +15,10 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -21,9 +28,9 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
-public class ConfigureForm extends AppCompatActivity {
+public class ConfigureForm extends AppCompatActivity implements ReportListener {
     String PVManuName, PVmodleName, CellManuName, LabName, Warranty, CountryPv, CountryCell, DateCell, DatePv, DateLab;
-    Button Savebtn;
+    Button Savebtn, updatebtn, deletebtn;
     Spinner PvModulenameSpinner, wrannty, spinner_Manufacturepv, spinner_Datecertificate, spinner_originpv, spinner_origincell, spinner_Manufacturecell, spinner_Certificate;
     List<ManufactureModel> list;
     LocalDbManufactue dbManufactue;
@@ -32,14 +39,20 @@ public class ConfigureForm extends AppCompatActivity {
     final Calendar myCalendar = Calendar.getInstance();
     RecyclerView RecyclerviewReport;
     ReportAdapter adapter;
+    CoordinatorLayout coordinatorLayout;
     ReportDb reportDb;
     List<ReportModelClass> reportModelClassList;
+    Context c = this;
+    String idvalue;
+
+    String updateId, DeleteId, updatePVManuName, updatePVmodleName, updateCellManuName, updateLabName, updateWarranty, updateCountryPv, updateCountryCell, updateDateCell, updateDatePv, updateDateLab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_configure_form);
-
+        updatebtn = findViewById(R.id.buttonupdate);
+        deletebtn = findViewById(R.id.button_delete);
         RecyclerviewReport = findViewById(R.id.RecyclerviewReport);
         PvModulenameSpinner = findViewById(R.id.spinner_PVname);
         wrannty = findViewById(R.id.spinner_warranty);
@@ -53,14 +66,69 @@ public class ConfigureForm extends AppCompatActivity {
         spinner_Datecertificate = findViewById(R.id.spinner_Datecertificate);
         Savebtn = findViewById(R.id.buttonSave);
         reportDb = new ReportDb(this);
+        coordinatorLayout = findViewById(R.id.coordinator);
+        calenderPV.setText("Date");
+        //Method for Left Swipe to Delete
+        enableSwipeToDeleteAndUndo();
 
 
+        deletebtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                LayoutInflater layoutInflaterAndroid = LayoutInflater.from(c);
+                View mView = layoutInflaterAndroid.inflate(R.layout.dboperationdailog, null);
+                AlertDialog.Builder alertDialogBuilderUserInput = new AlertDialog.Builder(c);
+                alertDialogBuilderUserInput.setView(mView);
+                Spinner spinner = mView.findViewById(R.id.spinner_dailog);
+                List temp = new ArrayList();
+                List<ReportModelClass> reportModelClassList1 = reportDb.getAllContacts();
+                for (int i = 0; i < reportModelClassList1.size(); i++) {
+                    temp.add(reportModelClassList1.get(i).getID());
+                }
+                final ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(getApplicationContext(), R.layout.support_simple_spinner_dropdown_item, temp);
+                spinnerArrayAdapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
+                spinner.setAdapter(spinnerArrayAdapter);
+                spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                        idvalue = String.valueOf(parent.getItemAtPosition(position));
+                    }
+
+                    @Override
+                    public void onNothingSelected(AdapterView<?> parent) {
+
+                    }
+                });
+
+
+                alertDialogBuilderUserInput
+                        .setCancelable(false)
+                        .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialogBox, int id) {
+                                reportDb.deleteRow(updateId);
+                                Toast.makeText(getApplicationContext(), "Delete... " + idvalue, Toast.LENGTH_SHORT).show();
+                                dialogBox.dismiss();
+                                SetupRecycler();
+                            }
+                        })
+
+                        .setNegativeButton("Cancel",
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialogBox, int id) {
+                                        dialogBox.cancel();
+                                    }
+                                });
+
+                AlertDialog alertDialogAndroid = alertDialogBuilderUserInput.create();
+                alertDialogAndroid.show();
+            }
+
+        });
         Savebtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 reportDb.addContact(new ReportModelClass(PVManuName, PVmodleName, CellManuName, LabName, Warranty, CountryPv, CountryCell, DateCell, DatePv, DateLab));
-                adapter.notifyDataSetChanged();
+                SetupRecycler();
             }
         });
 
@@ -69,14 +137,67 @@ public class ConfigureForm extends AppCompatActivity {
         SetupCellManufacture();
         SetupCertificate();
         SetupRecycler();
+        updatebtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
+                LayoutInflater layoutInflaterAndroid = LayoutInflater.from(c);
+                View mView = layoutInflaterAndroid.inflate(R.layout.dboperationdailog, null);
+                AlertDialog.Builder alertDialogBuilderUserInput = new AlertDialog.Builder(c);
+                alertDialogBuilderUserInput.setView(mView);
+                Spinner spinner = mView.findViewById(R.id.spinner_dailog);
+
+                List temp = new ArrayList();
+                List<ReportModelClass> reportModelClassList1 = reportDb.getAllContacts();
+                for (int i = 0; i < reportModelClassList1.size(); i++) {
+                    temp.add(reportModelClassList1.get(i).getID());
+                }
+                final ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(getApplicationContext(), R.layout.support_simple_spinner_dropdown_item, temp);
+                spinnerArrayAdapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
+                spinner.setAdapter(spinnerArrayAdapter);
+                spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                        idvalue = String.valueOf(parent.getItemAtPosition(position));
+                    }
+
+                    @Override
+                    public void onNothingSelected(AdapterView<?> parent) {
+
+                    }
+                });
+
+                alertDialogBuilderUserInput
+                        .setCancelable(false)
+                        .setPositiveButton("Update", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialogBox, int id) {
+                                reportDb.updateContact(new ReportModelClass(PVManuName, PVmodleName, CellManuName, LabName, Warranty, CountryPv, CountryCell, DateCell, DatePv, DateLab), updateId);
+                                Toast.makeText(getApplicationContext(), "Update... " + updateId, Toast.LENGTH_SHORT).show();
+                                dialogBox.dismiss();
+                                SetupRecycler();
+                            }
+                        })
+
+                        .setNegativeButton("Cancel",
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialogBox, int id) {
+                                        dialogBox.cancel();
+                                    }
+                                });
+
+                AlertDialog alertDialogAndroid = alertDialogBuilderUserInput.create();
+                alertDialogAndroid.show();
+
+
+            }
+        });
     }
 
     private void SetupRecycler() {
         reportModelClassList = new ArrayList<>();
         reportModelClassList = reportDb.getAllContacts();
         if (reportModelClassList.size() > 0) {
-            adapter = new ReportAdapter(reportModelClassList, this);
+            adapter = new ReportAdapter(reportModelClassList, this, this);
             RecyclerviewReport.setLayoutManager(new LinearLayoutManager(this));
             RecyclerviewReport.setAdapter(adapter);
             adapter.notifyDataSetChanged();
@@ -101,7 +222,8 @@ public class ConfigureForm extends AppCompatActivity {
 
             }
         });
-
+        int selectionPosition = spinnerArrayAdapterwarranty.getPosition(updateWarranty);
+        wrannty.setSelection(selectionPosition);
         stringList = new ArrayList<>();
         dbManufactue = new LocalDbManufactue(this);
         list = new ArrayList<>();
@@ -123,7 +245,8 @@ public class ConfigureForm extends AppCompatActivity {
 
             }
         });
-
+        int selectionPosition1 = spinnerArrayAdapter.getPosition(updatePVmodleName);
+        PvModulenameSpinner.setSelection(selectionPosition1);
     }
 
     private void SetupSpinnerPVmodule() {
@@ -150,7 +273,8 @@ public class ConfigureForm extends AppCompatActivity {
             }
         });
 
-
+        int selectionPosition1 = SpinnerCountrty.getPosition(updateCountryPv);
+        spinner_originpv.setSelection(selectionPosition1);
         //Manufacture name of Pv module
         List<ModuleDetailsModel> modelList = new ArrayList<>();
         ModuleDB moduleDB = new ModuleDB(this);
@@ -175,6 +299,8 @@ public class ConfigureForm extends AppCompatActivity {
 
             }
         });
+        int selectionPosition2 = SpinnerCountrty.getPosition(updatePVManuName);
+        spinner_Manufacturepv.setSelection(selectionPosition2);
 
         DatePickerDialog.OnDateSetListener date = new DatePickerDialog.OnDateSetListener() {
             @Override
@@ -193,6 +319,7 @@ public class ConfigureForm extends AppCompatActivity {
 
             }
         });
+        calenderPV.setText(updateDatePv);
     }
 
 
@@ -201,6 +328,7 @@ public class ConfigureForm extends AppCompatActivity {
         SimpleDateFormat dateFormat = new SimpleDateFormat(myFormat, Locale.US);
         calenderPV.setText(dateFormat.format(myCalendar.getTime()));
         DatePv = dateFormat.format(myCalendar.getTime());
+
     }
 
 
@@ -227,7 +355,8 @@ public class ConfigureForm extends AppCompatActivity {
 
             }
         });
-
+        int selectionPosition1 = SpinnerCountrty.getPosition(updateCountryCell);
+        spinner_origincell.setSelection(selectionPosition1);
 
         //Cell Manufacture Name
         CellDb cellDb = new CellDb(this);
@@ -254,6 +383,9 @@ public class ConfigureForm extends AppCompatActivity {
             }
         });
 
+        int selectionPosition = SpinnerCountrty.getPosition(updateCellManuName);
+        spinner_Manufacturecell.setSelection(selectionPosition);
+
         //Date calender
         DatePickerDialog.OnDateSetListener date = new DatePickerDialog.OnDateSetListener() {
             @Override
@@ -268,7 +400,7 @@ public class ConfigureForm extends AppCompatActivity {
                 DateCell = dateFormat.format(myCalendar.getTime());
             }
         };
-
+        calenderViewcell.setText(updateDateCell);
         calenderViewcell.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -302,6 +434,8 @@ public class ConfigureForm extends AppCompatActivity {
 
             }
         });
+        int selectionPosition1 = Certificatename.getPosition(updateLabName);
+        spinner_Certificate.setSelection(selectionPosition1);
 
         //Date of  LAB
         List<String> datevale = new ArrayList<>();
@@ -323,6 +457,102 @@ public class ConfigureForm extends AppCompatActivity {
 
             }
         });
+        int selectionPosition = Certificatename.getPosition(updateDateLab);
+        spinner_Certificate.setSelection(selectionPosition);
     }
 
+    //Method For Left swipe for Delete
+    private void enableSwipeToDeleteAndUndo() {
+        SwipeToDeleteCallback swipeToDeleteCallback = new SwipeToDeleteCallback(this) {
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int i) {
+
+
+                final int position = viewHolder.getAdapterPosition();
+                final ReportModelClass item = adapter.getData().get(position);
+                adapter.removeItem(position);
+                DeleteId = item.getID();
+                ShowDailog(position,item);
+//                reportDb.deleteRow(item.getID());
+//                Snackbar snackbar = Snackbar
+//                        .make(coordinatorLayout, "Item Deleted from the Database.", Snackbar.LENGTH_LONG);
+//                snackbar.setAction("UNDO", view -> {
+////                    reportDb.addContact(new ReportModelClass(item.getPVManuName(), item.getPVmodleName(), item.getCellManuName(), item.getLabName(), item.getWarranty(), item.getCountryPv(), item.getCountryCell(), item.getDateCell(), item.getDatePv(), item.getDateLab()));
+//
+//                    adapter.restoreItem(item, position);
+//                    RecyclerviewReport.scrollToPosition(position);
+//                });
+//
+//                snackbar.setActionTextColor(Color.YELLOW);
+//                snackbar.show();
+
+            }
+        };
+
+        ItemTouchHelper itemTouchhelper = new ItemTouchHelper(swipeToDeleteCallback);
+        itemTouchhelper.attachToRecyclerView(RecyclerviewReport);
+    }
+
+    @Override
+    public void onItemClick(int position) {
+        updateId = reportModelClassList.get(position).getID();
+        updatePVManuName = reportModelClassList.get(position).getPVManuName();
+        updatePVmodleName = reportModelClassList.get(position).getPVmodleName();
+        updateCellManuName = reportModelClassList.get(position).getCellManuName();
+        updateLabName = reportModelClassList.get(position).getLabName();
+        updateWarranty = reportModelClassList.get(position).getWarranty();
+        updateCountryPv = reportModelClassList.get(position).getCountryPv();
+        updateCountryCell = reportModelClassList.get(position).getCountryCell();
+        updateDateCell = reportModelClassList.get(position).getDateCell();
+        updateDatePv = reportModelClassList.get(position).getDatePv();
+        updateDateLab = reportModelClassList.get(position).getDateLab();
+//        Toast.makeText(ConfigureForm.this, reportModelClassList.get(position).getID(), Toast.LENGTH_SHORT).show();
+        new AlertDialog.Builder(this)
+                .setIcon(R.drawable.ic_baseline_warning_24)
+                .setTitle("Update")
+                .setMessage("Are you sure you want to update this item in Local Database?")
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        SetupSpinnerModuleName();
+                        SetupSpinnerPVmodule();
+                        SetupCertificate();
+                        SetupCellManufacture();
+                    }
+
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                })
+                .show();
+
+    }
+
+    private void ShowDailog(int position, ReportModelClass item) {
+        new AlertDialog.Builder(this)
+                .setIcon(R.drawable.ic_baseline_warning_24)
+                .setTitle("Delete")
+                .setMessage("Are you sure you want to Delete this item in Local Database?")
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        reportDb.deleteRow(DeleteId);
+                        adapter.notifyDataSetChanged();
+                        Toast.makeText(ConfigureForm.this, "Deleted"+DeleteId, Toast.LENGTH_SHORT).show();
+                    }
+
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        adapter.restoreItem(item, position);
+                        RecyclerviewReport.scrollToPosition(position);
+                        dialog.dismiss();
+                    }
+                })
+                .show();
+    }
 }

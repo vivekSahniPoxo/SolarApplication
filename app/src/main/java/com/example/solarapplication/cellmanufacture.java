@@ -33,6 +33,20 @@ public class cellmanufacture extends Fragment {
         recyclerView = v.findViewById(R.id.Recyclerview_cell);
         saveBtn = v.findViewById(R.id.BtnSaveCell);
         list=new ArrayList<>();
+       SetRecyclerview();
+
+        saveBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                cellDb.addContact(new CellModel(cellName.getText().toString().trim()));
+                cellName.setText("");
+                SetRecyclerview();
+            }
+        });
+        return v;
+    }
+
+    private void SetRecyclerview() {
         cellDb=new CellDb(getContext());
         list = cellDb.getAllContacts();
         //Setting Data in List
@@ -45,14 +59,5 @@ public class cellmanufacture extends Fragment {
         else {
             Toast.makeText(getContext(), "No Data Available...", Toast.LENGTH_SHORT).show();
         }
-
-        saveBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                cellDb.addContact(new CellModel(cellName.getText().toString().trim()));
-                cellName.setText("");
-            }
-        });
-        return v;
     }
 }
