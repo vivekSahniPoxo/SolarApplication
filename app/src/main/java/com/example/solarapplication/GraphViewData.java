@@ -2,6 +2,7 @@ package com.example.solarapplication;
 
 import static android.graphics.Color.RED;
 
+import android.app.ProgressDialog;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -12,6 +13,8 @@ import android.graphics.pdf.PdfDocument;
 import android.os.Bundle;
 import android.os.Environment;
 import android.text.format.DateFormat;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -21,6 +24,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkResponse;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.DataPointInterface;
@@ -32,9 +43,14 @@ import com.speedata.libuhf.UHFManager;
 import com.speedata.libuhf.bean.SpdInventoryData;
 import com.speedata.libuhf.interfaces.OnSpdInventoryListener;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -45,14 +61,17 @@ public class GraphViewData extends AppCompatActivity {
     int pageHeight = 2200;
     int pagewidth = 1800;
     Bitmap bmp, scaledbmp1;
-    String FF, pmax1, Vmax1, IPMAx1, VOC1,ID ,ISC1, TagId, Pvmanufacture, cellManufacture, PVMonth, CellMonth, PVcountry, CellCountry, QualityCertificate, LAb, Modelname;
+String SerialId="",paramter;
+    String FF, pmax1, Vmax1, IPMAx1, VOC1, ID, ISC1, TagId, Pvmanufacture, cellManufacture, PVMonth, CellMonth, PVcountry, CellCountry, QualityCertificate, LAb, Modelname;
     Double V1, V2, V3, V4, V5, V6, V7, V8, V9, V10, C1, C2, C3, C10, C4, C5, C6, C7, C8, C9;
     IUHFService iuhfService;
     List<ReportModelClass> modelList;
     Button viewData, PdfGenerate;
     CardView scanread;
-    String sno,ModuleID,PVMdlNumber,CellMfgName,CellMfgCuntry,CellMfgDate,ModuleMfg,ModuleMfgCountry,ModuleMfgDate,IECLab,IECDate;
+    ProgressDialog dialog;
+    String sno, ModuleID, PVMdlNumber, CellMfgName, CellMfgCuntry, CellMfgDate, ModuleMfg, ModuleMfgCountry, ModuleMfgDate, IECLab, IECDate;
     public TextView t1, t2, t3, t4, t5;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,7 +85,7 @@ public class GraphViewData extends AppCompatActivity {
         t3 = findViewById(R.id.MonthPV);
         t4 = findViewById(R.id.MonthSolar);
         t5 = findViewById(R.id.IECcertificate);
-
+dialog=new ProgressDialog(this);
 
         iuhfService.inventoryStart();
         iuhfService.setOnInventoryListener(new OnSpdInventoryListener() {
@@ -96,6 +115,9 @@ public class GraphViewData extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 ReadData();
+                dialog.setCancelable(false);
+                dialog.setMessage("Reading Data...");
+                dialog.show();
 
             }
         });
@@ -105,7 +127,11 @@ public class GraphViewData extends AppCompatActivity {
     //Read RFID TAg
     public void ReadData() {
         iuhfService.setOnReadListener(var1 -> {
-            convertByteToHexadecimal(var1.getReadData());
+            try {
+                convertByteToHexadecimal(var1.getReadData());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         });
 
         iuhfService.inventory_start();
@@ -213,7 +239,7 @@ public class GraphViewData extends AppCompatActivity {
 
     }
 
-    public void convertByteToHexadecimal(byte[] byteArray) {
+    public void convertByteToHexadecimal(byte[] byteArray) throws JSONException {
         String hex = "";
         // Iterating through each byte in the array
         for (byte i : byteArray) {
@@ -225,7 +251,7 @@ public class GraphViewData extends AppCompatActivity {
 
     }
 
-    private void SetDAta(String hex) {
+    private void SetDAta(String hex) throws JSONException {
         String vv = hex.substring(18, 46);
         System.out.print("VALUE OF DATA " + vv);
         byte[] bytes = hexStringToByteArray(vv);
@@ -233,6 +259,11 @@ public class GraphViewData extends AppCompatActivity {
 //        t1.setText(SerialId);
 //
         ID = hex.substring(48, 49);
+
+        paramter = vv.substring(12, 28);
+        System.out.print("" + paramter);
+        byte[] bytes1 = hexStringToByteArray(paramter);
+        SerialId = new String(bytes1, StandardCharsets.UTF_8);
 
         Integer p = Integer.parseInt(hex.substring(49, 52));
         String max = hex.substring(52, 54);
@@ -255,8 +286,8 @@ public class GraphViewData extends AppCompatActivity {
 //        t8.setText("ISC: " + ISC);
         PopulateGraphValue(Double.parseDouble(Vmax1), Double.parseDouble(IPMAx1), Double.parseDouble(VOC1), Double.parseDouble(ISC1));
 //        SetData(ID.substring(2));
-        ReportDb reportDb= new ReportDb(this);
-        modelList=reportDb.getAllContacts();
+        ReportDb reportDb = new ReportDb(this);
+        modelList = reportDb.getAllContacts();
         for (int i = 0; i < modelList.size(); i++) {
             if (ID.matches(modelList.get(i).getID())) {
 
@@ -270,23 +301,26 @@ public class GraphViewData extends AppCompatActivity {
 //                LAb = modelList.get(i).getDateLab();
 //                QualityCertificate = modelList.get(i).getLabName();
                 sno = modelList.get(i).getID();
-                ModuleID =  modelList.get(i).getPVmodleName();
+                ModuleID = modelList.get(i).getPVmodleName();
                 PVMdlNumber = modelList.get(i).getPVmodleName();
-                CellMfgName =  modelList.get(i).getCellManuName();
+                CellMfgName = modelList.get(i).getCellManuName();
                 CellMfgCuntry = modelList.get(i).getCountryCell();
-                CellMfgDate =  modelList.get(i).getDateCell();
+                CellMfgDate = modelList.get(i).getDateCell();
                 ModuleMfg = modelList.get(i).getPVManuName();
-                ModuleMfgCountry =modelList.get(i).getCountryPv();
+                ModuleMfgCountry = modelList.get(i).getCountryPv();
                 ModuleMfgDate = modelList.get(i).getDatePv();
                 IECLab = modelList.get(i).getLabName();
                 IECDate = modelList.get(i).getDateLab();
-                PdfGenerate.setEnabled(true);
+
                 t1.setText(ModuleMfg);
                 t2.setText(CellMfgName);
                 t3.setText(ModuleMfgDate);
                 t4.setText(CellMfgDate);
                 t5.setText(IECLab);
-            }}
+            }
+        }
+
+        FetchData(SerialId);
     }
 
     public static byte[] hexStringToByteArray(String hex) {
@@ -675,7 +709,6 @@ public class GraphViewData extends AppCompatActivity {
         canvas.drawText("|", Yline, 1080, title);
 
 
-
         canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 1100, title);
         canvas.drawText("--------------------------------------------------------------------------------------------------------------------------------------------------------", 180, 230, title);
 
@@ -754,8 +787,8 @@ public class GraphViewData extends AppCompatActivity {
         // below line is used to set the name of
         // our PDF file and its path.
         Date d = new Date();
-        CharSequence s  = DateFormat.format("MMMM d, yyyy ", d.getTime());
-        File file = new File(Environment.getExternalStorageDirectory(), s+"WriteTagSolar.pdf");
+        CharSequence s = DateFormat.format("MMMM d, yyyy ", d.getTime());
+        File file = new File(Environment.getExternalStorageDirectory(), s + "WriteTagSolar.pdf");
 
         try {
             // after creating a file name we will
@@ -812,5 +845,121 @@ public class GraphViewData extends AppCompatActivity {
 //        return node.getNodeValue();
 //    }
 
+
+    private void FetchData(String parameter) throws JSONException {
+
+        String url = "http://164.52.223.163:4502/api/GetbyId";
+        JSONObject obj = new JSONObject();
+        obj.put("serialNo", parameter);
+        obj.put("moduleId", parameter);
+        obj.put("formateid", "1");
+        RequestQueue queue = Volley.newRequestQueue(this);
+
+
+        final String requestBody = obj.toString();
+
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, url, response -> {
+
+            try {
+
+                JSONObject object = new JSONObject(response);
+                JSONObject technicleSettings_information = object.getJSONObject("technicleSettings_Information");
+
+                String SerialNo = technicleSettings_information.getString("Serial number");
+                String date = technicleSettings_information.getString("date");
+                String time = technicleSettings_information.getString("time");
+                //PMAX DECODING
+                String Pmaxnew = technicleSettings_information.getString("pmax");
+                String FillFactor = technicleSettings_information.getString("Fill Factor");
+                //Voc DECODING
+                String Voc = technicleSettings_information.getString("voc");
+                //ISC Decoding
+                String Isc = (technicleSettings_information.getString("isc"));
+                //Vmp Decoding
+                String Vmp = (technicleSettings_information.getString("vmp"));
+
+
+                //Imp Decoding
+
+
+                String Rs = technicleSettings_information.getString("rs");
+                String Rsh = technicleSettings_information.getString("rsh");
+                String CEff = technicleSettings_information.getString("C.Eff");
+                String MTemp = technicleSettings_information.getString("M.Temp");
+                String RefVoltage = technicleSettings_information.getString("refvoltage");
+                String RefCurent = technicleSettings_information.getString("RefCurent");
+                String RefPmax = technicleSettings_information.getString("refpmax");
+                String Irra = technicleSettings_information.getString("irra");
+                String Binnumber = technicleSettings_information.getString("Bin number");
+
+
+                JSONObject companySettings = object.getJSONObject("companySettings_Information");
+
+
+                 sno = companySettings.getString("sno");
+                ModuleID = companySettings.getString("Module ID");
+                PVMdlNumber = companySettings.getString("PV Model Number");
+                CellMfgName = companySettings.getString("Cell Mfg Name");
+                CellMfgCuntry = companySettings.getString("Cell Mfg Cuntry");
+                CellMfgDate = companySettings.getString("Cell Mfg Date");
+                ModuleMfg = companySettings.getString("Module Mfg");
+                ModuleMfgCountry = companySettings.getString("Module Mfg Country");
+                ModuleMfgDate = companySettings.getString("Module Mfg Date");
+                IECLab = companySettings.getString("IEC Lab");
+                IECDate = companySettings.getString("IEC Date");
+
+                t1.setText(ModuleMfg);
+                t2.setText(CellMfgName);
+                t3.setText(ModuleMfgDate);
+                t4.setText(CellMfgDate);
+                t5.setText(IECLab);
+                PdfGenerate.setEnabled(true);
+                dialog.dismiss();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            Log.i("VOLLEY", response);
+
+        }, error -> {
+//            Log.e("VOLLEY Negative", String.valueOf(error.networkResponse.statusCode));
+            Toast.makeText(GraphViewData.this, "Not Found", Toast.LENGTH_SHORT).show();
+            dialog.dismiss();
+//            progressDialog.dismiss();
+
+        }) {
+            @Override
+            public String getBodyContentType() {
+                return "application/json; charset=utf-8";
+            }
+
+            @Override
+            public byte[] getBody() throws AuthFailureError {
+                try {
+                    return requestBody == null ? null : requestBody.getBytes("utf-8");
+                } catch (UnsupportedEncodingException uee) {
+                    VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", requestBody, "utf-8");
+                    return null;
+                }
+            }
+
+            @Override
+            protected Response<String> parseNetworkResponse(NetworkResponse response) {
+
+                return super.parseNetworkResponse(response);
+            }
+        };
+
+        queue.add(stringRequest);
+    }
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_F1) {//KeyEvent { action=ACTION_UP, keyCode=KEYCODE_F1, scanCode=59, metaState=0, flags=0x8, repeatCount=0, eventTime=13517236, downTime=13516959, deviceId=1, source=0x101 }
+            ReadData();
+            dialog.setCancelable(false);
+            dialog.setMessage("Reading Data...");
+            dialog.show();
+            return true;
+        }
+        return super.onKeyUp(keyCode, event);
+    }
 
 }

@@ -25,8 +25,6 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.speedata.libuhf.IUHFService;
 import com.speedata.libuhf.UHFManager;
-import com.speedata.libuhf.bean.SpdWriteData;
-import com.speedata.libuhf.interfaces.OnSpdWriteListener;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.poi.EncryptedDocumentException;
@@ -54,7 +52,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 public class WriteTag extends AppCompatActivity implements View.OnClickListener {
-    Button ViewGraph,  SearchData;
+    Button ViewGraph, SearchData;
     CheckBox ViewDetails;
     IUHFService iuhfService;
     EditText SerialInput;
@@ -76,7 +74,7 @@ public class WriteTag extends AppCompatActivity implements View.OnClickListener 
         ViewDetails = findViewById(R.id.ViewAllData);
         SearchData = findViewById(R.id.Search_Data);
         progressDialog = new ProgressDialog(this);
-        SearchData.setOnClickListener(this::onClick);
+        SearchData.setOnClickListener(this);
         ViewGraph.setOnClickListener(this::onClick);
         ViewDetails.setOnClickListener(this::onClick);
 
@@ -100,6 +98,7 @@ public class WriteTag extends AppCompatActivity implements View.OnClickListener 
         pmaxtxt = findViewById(R.id.Pmax);
         imaxtxt = findViewById(R.id.Imax);
         voctxt = findViewById(R.id.Voc);
+
 
 
     }
@@ -127,10 +126,13 @@ public class WriteTag extends AppCompatActivity implements View.OnClickListener 
                 break;
             case R.id.Search_Data:
                 try {
+
                     FetchData(SerialInput.getText().toString().trim());
                     progressDialog.setCancelable(false);
                     progressDialog.setMessage("Please wait While Writing Data...");
                     progressDialog.show();
+                    SerialInput.setText("");
+
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -261,36 +263,33 @@ public class WriteTag extends AppCompatActivity implements View.OnClickListener 
         StringRequest stringRequest = new StringRequest(Request.Method.POST, url, response -> {
 
             try {
-                SerialInput.setText("");
                 JSONObject object = new JSONObject(response);
                 JSONObject technicleSettings_information = object.getJSONObject("technicleSettings_Information");
 
                 SerialNo = technicleSettings_information.getString("Serial number");
-
                 date = technicleSettings_information.getString("date");
                 time = technicleSettings_information.getString("time");
-
                 //PMAX DECODING
                 Pmaxnew = technicleSettings_information.getString("pmax");
-
-
                 FillFactor = technicleSettings_information.getString("Fill Factor");
-
-
                 //Voc DECODING
                 Voc = technicleSettings_information.getString("voc");
-
-
                 //ISC Decoding
                 Isc = (technicleSettings_information.getString("isc"));
-
-
                 //Vmp Decoding
                 Vmp = (technicleSettings_information.getString("vmp"));
 
 
                 //Imp Decoding
                 Imp = (technicleSettings_information.getString("imp"));
+                voctxt.setText(Voc);
+                imaxtxt.setText(Imp);
+                serialnotxt.setText(SerialNo);
+                fftxt.setText(FillFactor);
+                celldatetxt.setText(date);
+                labdatetxt.setText(time);
+                pmaxtxt.setText(Pmaxnew);
+                isctxt.setText(Isc);
 
                 String Rs = technicleSettings_information.getString("rs");
                 String Rsh = technicleSettings_information.getString("rsh");
@@ -327,6 +326,26 @@ public class WriteTag extends AppCompatActivity implements View.OnClickListener 
                 ModuleMfgDate = companySettings.getString("Module Mfg Date");
                 IECLab = companySettings.getString("IEC Lab");
                 IECDate = companySettings.getString("IEC Date");
+
+                pvmanutxt.setText(ModuleMfg);
+                cellmanutxt.setText(CellMfgName);
+                pvdatetxt.setText(ModuleMfgDate);
+                celldatetxt.setText(CellMfgDate);
+                labnametxt.setText(IECLab);
+                labdatetxt.setText(IECDate);
+                pvcoiuntrytxt.setText(ModuleMfgCountry);
+                cellcountrytxt.setText(CellMfgCuntry);
+                modeltxt.setText(Binnumber);
+                SerialInput.setText(ModuleID);
+
+
+                fftxt.setText(FillFactor);
+                vmaxtxt.setText(Vmp);
+                isctxt.setText(Isc);
+                voctxt.setText(Voc);
+                pmaxtxt.setText(Pmaxnew);
+                imaxtxt.setText(Imp);
+
 
 //                writeDataModel = new WriteDataModel(SerialNo, date, time, Pmaxnew, FillFactor, Voc, Isc, Vmp, Imp, Sno, ModuleID, PVMdlNumber, CellMfgName, CellMfgCuntry, CellMfgDate, ModuleMfg, ModuleMfgCountry, ModuleMfgDate, IECLab, IECDate);
                 dataModelList.add(new WriteDataModel(SerialNo, date, time, Pmaxnew, FillFactor, Voc, Isc, Vmp, Imp, Sno, ModuleID, PVMdlNumber, CellMfgName, CellMfgCuntry, CellMfgDate, ModuleMfg, ModuleMfgCountry, ModuleMfgDate, IECLab, IECDate));
@@ -526,7 +545,7 @@ public class WriteTag extends AppCompatActivity implements View.OnClickListener 
     }
 
     public void DataFormatting(String lemn, String formattedData) {
-        String NewID = "000" + formattedData;
+        String NewID = "000"+ formattedData;
 //        char[] chars1 = Hex.encodeHex(NewID.getBytes(StandardCharsets.UTF_8));
         String FinalDATA = lemn.concat(String.valueOf(NewID).concat("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"));
         System.out.print("VALUE WITH ID" + FinalDATA);
@@ -557,13 +576,7 @@ public class WriteTag extends AppCompatActivity implements View.OnClickListener 
     }
 
     public void WriteData(byte[] finalDATA) {
-        iuhfService.setOnWriteListener(new OnSpdWriteListener() {
-            @Override
-            public void getWriteData(SpdWriteData var1) {
-                System.out.print("Data Having " + var1.getStatus());
-
-            }
-        });
+        iuhfService.setOnWriteListener(var1 -> System.out.print("Data Having " + var1.getStatus()));
         iuhfService.inventory_start();
 //        byte[] bytes = new byte[100];
 //
@@ -576,6 +589,7 @@ public class WriteTag extends AppCompatActivity implements View.OnClickListener 
         ErrorCode(readArea);
         Check();
     }
+
     public void Check() {
         if (ViewDetails.isChecked()) {
             if (filepath.exists()) {
@@ -586,7 +600,7 @@ public class WriteTag extends AppCompatActivity implements View.OnClickListener 
         }
 
 
-}
+    }
 
     private void UpdateExcelWrite() {
         Object[][] newStudents = {
@@ -646,4 +660,4 @@ public class WriteTag extends AppCompatActivity implements View.OnClickListener 
         }
 
     }
-    }
+}

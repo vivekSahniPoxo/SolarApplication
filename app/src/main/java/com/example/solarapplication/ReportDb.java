@@ -26,6 +26,7 @@ public class ReportDb extends SQLiteOpenHelper {
     private static final String DateLab = "DateLab";
 
 
+
     public ReportDb(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -81,6 +82,9 @@ public class ReportDb extends SQLiteOpenHelper {
         db.insert(TABLE_Report, null, values);
         //2nd argument is String containing nullColumnHack
         db.close(); // Closing database connection
+
+
+
     }
 
     public List<ReportModelClass> getAllContacts() {

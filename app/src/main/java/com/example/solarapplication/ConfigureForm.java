@@ -3,7 +3,6 @@ package com.example.solarapplication;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -72,64 +71,53 @@ public class ConfigureForm extends AppCompatActivity implements ReportListener {
         enableSwipeToDeleteAndUndo();
 
 
-        deletebtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                LayoutInflater layoutInflaterAndroid = LayoutInflater.from(c);
-                View mView = layoutInflaterAndroid.inflate(R.layout.dboperationdailog, null);
-                AlertDialog.Builder alertDialogBuilderUserInput = new AlertDialog.Builder(c);
-                alertDialogBuilderUserInput.setView(mView);
-                Spinner spinner = mView.findViewById(R.id.spinner_dailog);
-                List temp = new ArrayList();
-                List<ReportModelClass> reportModelClassList1 = reportDb.getAllContacts();
-                for (int i = 0; i < reportModelClassList1.size(); i++) {
-                    temp.add(reportModelClassList1.get(i).getID());
+        deletebtn.setOnClickListener(v -> {
+            LayoutInflater layoutInflaterAndroid = LayoutInflater.from(c);
+            View mView = layoutInflaterAndroid.inflate(R.layout.dboperationdailog, null);
+            AlertDialog.Builder alertDialogBuilderUserInput = new AlertDialog.Builder(c);
+            alertDialogBuilderUserInput.setView(mView);
+            Spinner spinner = mView.findViewById(R.id.spinner_dailog);
+            List temp = new ArrayList();
+            List<ReportModelClass> reportModelClassList1 = reportDb.getAllContacts();
+            for (int i = 0; i < reportModelClassList1.size(); i++) {
+                temp.add(reportModelClassList1.get(i).getID());
+            }
+            final ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(getApplicationContext(), R.layout.support_simple_spinner_dropdown_item, temp);
+            spinnerArrayAdapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
+            spinner.setAdapter(spinnerArrayAdapter);
+            spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    idvalue = String.valueOf(parent.getItemAtPosition(position));
                 }
-                final ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(getApplicationContext(), R.layout.support_simple_spinner_dropdown_item, temp);
-                spinnerArrayAdapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
-                spinner.setAdapter(spinnerArrayAdapter);
-                spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                    @Override
-                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                        idvalue = String.valueOf(parent.getItemAtPosition(position));
-                    }
 
-                    @Override
-                    public void onNothingSelected(AdapterView<?> parent) {
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
 
-                    }
-                });
+                }
+            });
 
 
-                alertDialogBuilderUserInput
-                        .setCancelable(false)
-                        .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialogBox, int id) {
-                                reportDb.deleteRow(updateId);
-                                Toast.makeText(getApplicationContext(), "Delete... " + idvalue, Toast.LENGTH_SHORT).show();
-                                dialogBox.dismiss();
-                                SetupRecycler();
-                            }
-                        })
+            alertDialogBuilderUserInput
+                    .setCancelable(false)
+                    .setPositiveButton("Delete", (dialogBox, id) -> {
+                        reportDb.deleteRow(updateId);
+                        Toast.makeText(getApplicationContext(), "Delete... " + idvalue, Toast.LENGTH_SHORT).show();
+                        dialogBox.dismiss();
+                        SetupRecycler();
+                    })
 
-                        .setNegativeButton("Cancel",
-                                new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialogBox, int id) {
-                                        dialogBox.cancel();
-                                    }
-                                });
+                    .setNegativeButton("Cancel",
+                            (dialogBox, id) -> dialogBox.cancel());
 
-                AlertDialog alertDialogAndroid = alertDialogBuilderUserInput.create();
-                alertDialogAndroid.show();
-            }
-
+            AlertDialog alertDialogAndroid = alertDialogBuilderUserInput.create();
+            alertDialogAndroid.show();
         });
-        Savebtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                reportDb.addContact(new ReportModelClass(PVManuName, PVmodleName, CellManuName, LabName, Warranty, CountryPv, CountryCell, DateCell, DatePv, DateLab));
-                SetupRecycler();
-            }
+        Savebtn.setOnClickListener(v -> {
+            reportDb.addContact(new ReportModelClass(PVManuName, PVmodleName, CellManuName, LabName, Warranty, CountryPv, CountryCell, DateCell, DatePv, DateLab));
+            SetupRecycler();
+            Toast.makeText(c, "Saved... ", Toast.LENGTH_SHORT).show();
+
         });
 
         SetupSpinnerModuleName();
@@ -137,59 +125,50 @@ public class ConfigureForm extends AppCompatActivity implements ReportListener {
         SetupCellManufacture();
         SetupCertificate();
         SetupRecycler();
-        updatebtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        updatebtn.setOnClickListener(v -> {
 
-                LayoutInflater layoutInflaterAndroid = LayoutInflater.from(c);
-                View mView = layoutInflaterAndroid.inflate(R.layout.dboperationdailog, null);
-                AlertDialog.Builder alertDialogBuilderUserInput = new AlertDialog.Builder(c);
-                alertDialogBuilderUserInput.setView(mView);
-                Spinner spinner = mView.findViewById(R.id.spinner_dailog);
+            LayoutInflater layoutInflaterAndroid = LayoutInflater.from(c);
+            View mView = layoutInflaterAndroid.inflate(R.layout.dboperationdailog, null);
+            AlertDialog.Builder alertDialogBuilderUserInput = new AlertDialog.Builder(c);
+            alertDialogBuilderUserInput.setView(mView);
+            Spinner spinner = mView.findViewById(R.id.spinner_dailog);
 
-                List temp = new ArrayList();
-                List<ReportModelClass> reportModelClassList1 = reportDb.getAllContacts();
-                for (int i = 0; i < reportModelClassList1.size(); i++) {
-                    temp.add(reportModelClassList1.get(i).getID());
-                }
-                final ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(getApplicationContext(), R.layout.support_simple_spinner_dropdown_item, temp);
-                spinnerArrayAdapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
-                spinner.setAdapter(spinnerArrayAdapter);
-                spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                    @Override
-                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                        idvalue = String.valueOf(parent.getItemAtPosition(position));
-                    }
-
-                    @Override
-                    public void onNothingSelected(AdapterView<?> parent) {
-
-                    }
-                });
-
-                alertDialogBuilderUserInput
-                        .setCancelable(false)
-                        .setPositiveButton("Update", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialogBox, int id) {
-                                reportDb.updateContact(new ReportModelClass(PVManuName, PVmodleName, CellManuName, LabName, Warranty, CountryPv, CountryCell, DateCell, DatePv, DateLab), updateId);
-                                Toast.makeText(getApplicationContext(), "Update... " + updateId, Toast.LENGTH_SHORT).show();
-                                dialogBox.dismiss();
-                                SetupRecycler();
-                            }
-                        })
-
-                        .setNegativeButton("Cancel",
-                                new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialogBox, int id) {
-                                        dialogBox.cancel();
-                                    }
-                                });
-
-                AlertDialog alertDialogAndroid = alertDialogBuilderUserInput.create();
-                alertDialogAndroid.show();
-
-
+            List temp = new ArrayList();
+            List<ReportModelClass> reportModelClassList1 = reportDb.getAllContacts();
+            for (int i = 0; i < reportModelClassList1.size(); i++) {
+                temp.add(reportModelClassList1.get(i).getID());
             }
+            final ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(getApplicationContext(), R.layout.support_simple_spinner_dropdown_item, temp);
+            spinnerArrayAdapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
+            spinner.setAdapter(spinnerArrayAdapter);
+            spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    idvalue = String.valueOf(parent.getItemAtPosition(position));
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+
+                }
+            });
+
+            alertDialogBuilderUserInput
+                    .setCancelable(false)
+                    .setPositiveButton("Update", (dialogBox, id) -> {
+                        reportDb.updateContact(new ReportModelClass(PVManuName, PVmodleName, CellManuName, LabName, Warranty, CountryPv, CountryCell, DateCell, DatePv, DateLab), updateId);
+                        Toast.makeText(getApplicationContext(), "Update... " + updateId, Toast.LENGTH_SHORT).show();
+                        dialogBox.dismiss();
+                        SetupRecycler();
+                    })
+
+                    .setNegativeButton("Cancel",
+                            (dialogBox, id) -> dialogBox.cancel());
+
+            AlertDialog alertDialogAndroid = alertDialogBuilderUserInput.create();
+            alertDialogAndroid.show();
+
+
         });
     }
 
@@ -472,7 +451,7 @@ public class ConfigureForm extends AppCompatActivity implements ReportListener {
                 final ReportModelClass item = adapter.getData().get(position);
                 adapter.removeItem(position);
                 DeleteId = item.getID();
-                ShowDailog(position,item);
+                ShowDailog(position, item);
 //                reportDb.deleteRow(item.getID());
 //                Snackbar snackbar = Snackbar
 //                        .make(coordinatorLayout, "Item Deleted from the Database.", Snackbar.LENGTH_LONG);
@@ -511,22 +490,13 @@ public class ConfigureForm extends AppCompatActivity implements ReportListener {
                 .setIcon(R.drawable.ic_baseline_warning_24)
                 .setTitle("Update")
                 .setMessage("Are you sure you want to update this item in Local Database?")
-                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        SetupSpinnerModuleName();
-                        SetupSpinnerPVmodule();
-                        SetupCertificate();
-                        SetupCellManufacture();
-                    }
-
+                .setPositiveButton("Yes", (dialog, which) -> {
+                    SetupSpinnerModuleName();
+                    SetupSpinnerPVmodule();
+                    SetupCertificate();
+                    SetupCellManufacture();
                 })
-                .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                })
+                .setNegativeButton("No", (dialog, which) -> dialog.dismiss())
                 .show();
 
     }
@@ -536,22 +506,15 @@ public class ConfigureForm extends AppCompatActivity implements ReportListener {
                 .setIcon(R.drawable.ic_baseline_warning_24)
                 .setTitle("Delete")
                 .setMessage("Are you sure you want to Delete this item in Local Database?")
-                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        reportDb.deleteRow(DeleteId);
-                        adapter.notifyDataSetChanged();
-                        Toast.makeText(ConfigureForm.this, "Deleted"+DeleteId, Toast.LENGTH_SHORT).show();
-                    }
-
+                .setPositiveButton("Yes", (dialog, which) -> {
+                    reportDb.deleteRow(DeleteId);
+                    adapter.notifyDataSetChanged();
+                    Toast.makeText(ConfigureForm.this, "Deleted" + DeleteId, Toast.LENGTH_SHORT).show();
                 })
-                .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        adapter.restoreItem(item, position);
-                        RecyclerviewReport.scrollToPosition(position);
-                        dialog.dismiss();
-                    }
+                .setNegativeButton("No", (dialog, which) -> {
+                    adapter.restoreItem(item, position);
+                    RecyclerviewReport.scrollToPosition(position);
+                    dialog.dismiss();
                 })
                 .show();
     }

@@ -4,6 +4,7 @@ import static android.graphics.Color.RED;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -16,6 +17,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,6 +30,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkResponse;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.DataPointInterface;
@@ -49,6 +59,8 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -60,6 +72,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
@@ -69,14 +83,15 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 public class ReadTag extends AppCompatActivity {
+    String paramter;
     GraphView linegraph;
     int pageHeight = 2200;
     int pagewidth = 1800;
-    String TagId, Pvmanufacture, cellManufacture, PVMonth, CellMonth, PVcountry, CellCountry, QualityCertificate, LAb, Modelname;
+    String TagId, Pvmanufacture, cellManufacture, PVMonth, CellMonth, PVcountry, CellCountry, QualityCertificate, LAb, Modelname, Binnumber;
     CheckBox ExcelGenerate, PdfGenerate;
     Bitmap bmp, scaledbmp;
     File filepath = new File(Environment.getExternalStorageDirectory(), "/SolarExcelReadTag.xls");
-
+    String SerialNo = "", date, time, Pmaxnew, FillFactor, Voc, Isc, Vmp, Imp, Sno, ModuleID, PVMdlNumber, CellMfgName, CellMfgCuntry, CellMfgDate, ModuleMfg, ModuleMfgCountry, ModuleMfgDate, IECLab, IECDate;
     Button ViewDetails;
     IUHFService iuhfService;
     CardView cardView;
@@ -88,12 +103,13 @@ public class ReadTag extends AppCompatActivity {
     List<XmlModel> modelList;
     public TextView t1, t2, t3, t4, t5, t6;
 
+    ProgressDialog dialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_read_tag);
-
+        dialog = new ProgressDialog(this);
 
 //        initMethod();
         t1 = findViewById(R.id.Booktitle);
@@ -128,6 +144,9 @@ public class ReadTag extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 ReadData();
+                dialog.setCancelable(false);
+                dialog.setMessage("Reading Data...");
+                dialog.show();
 //                UpdateExcel();
             }
         });
@@ -137,6 +156,7 @@ public class ReadTag extends AppCompatActivity {
 
         linegraph = (GraphView) findViewById(R.id.line_graph);
         ViewDetails.setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View v) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(v.getRootView().getContext());
@@ -158,28 +178,19 @@ public class ReadTag extends AppCompatActivity {
                 TextView FillFactor = dailogbox.findViewById(R.id.FillFactor);
                 TextView ISC = dailogbox.findViewById(R.id.ISC);
 
-                for (int i = 0; i < modelList.size(); i++) {
-                    if (ID.substring(2).matches(modelList.get(i).getId())) {
 
-                        FillFactor.setText(FF);
-                        Vmax.setText(Vmax1);
-                        ISC.setText(ISC1);
-                        Voc.setText(VOC1);
-                        Pmax.setText(pmax1);
-                        Imax.setText(IPMAx1);
-                        manufactureNamePV.setText(modelList.get(i).getPVMName());
-                        ModuleName.setText(modelList.get(i).getPVModule());
-                        SerialModule.setText(SerialId);
-                        manufactureNameSolar.setText(modelList.get(i).getCellMName());
-                        MonthPV.setText(modelList.get(i).getPVDate());
-                        MonthSolar.setText(modelList.get(i).getCellDate());
-                        IECcertificate.setText(modelList.get(i).getIECLab());
-                        DateIEC.setText(modelList.get(i).getIECDate());
-                        OriginCountry.setText(modelList.get(i).getPVCountry());
-                        OriginSolar.setText(modelList.get(i).CellCountry);
+                manufactureNamePV.setText(ModuleMfg);
+                manufactureNameSolar.setText(CellMfgName);
+                MonthPV.setText(ModuleMfgDate);
+                MonthSolar.setText(CellMfgDate);
+                IECcertificate.setText(IECLab);
+                DateIEC.setText(IECDate);
+                OriginCountry.setText(ModuleMfgCountry);
+                OriginSolar.setText(CellMfgCuntry);
+                ModuleName.setText(Binnumber);
+                SerialModule.setText(ModuleID);
 
-                    }
-                }
+
                 FillFactor.setText(FF);
                 Vmax.setText(Vmax1);
                 ISC.setText(ISC1);
@@ -321,28 +332,36 @@ public class ReadTag extends AppCompatActivity {
 
     }
 
+
     private void SetDAta(String hex) {
         String vv = hex.substring(18, 46);
         System.out.print("VALUE OF DATA " + vv);
-        byte[] bytes = hexStringToByteArray(vv);
-        SerialId = new String(bytes, StandardCharsets.UTF_8);
+
+//        byte[] bytes = hexStringToByteArray(vv);
+//        SerialId = new String(bytes, StandardCharsets.UTF_8);
+
 //        t1.setText(SerialId);
 
         ID = hex.substring(46, 49);
 
-        t2.setText(ID);
+//        t2.setText(ID);
+        paramter = vv.substring(12, 28);
+        System.out.print("" + paramter);
+        byte[] bytes1 = hexStringToByteArray(paramter);
+        SerialId = new String(bytes1, StandardCharsets.UTF_8);
+
         Integer p = Integer.parseInt(hex.substring(49, 52));
         String max = hex.substring(52, 54);
         pmax1 = p + "." + max;
-        t3.setText(pmax1);
+//        t3.setText(pmax1);
         Integer V = Integer.parseInt(hex.substring(54, 56));
         String max1 = hex.substring(56, 58);
         Vmax1 = V + "." + max1;
-        t4.setText(Vmax1);
+//        t4.setText(Vmax1);
         Integer IP = Integer.parseInt(hex.substring(59, 60));
         String max2 = hex.substring(60, 62);
         IPMAx1 = IP + "." + max2;
-        t5.setText(IPMAx1);
+//        t5.setText(IPMAx1);
         Integer F1 = Integer.parseInt(hex.substring(63, 65));
         String F2 = hex.substring(65, 67);
         FF = F1 + "." + F2;
@@ -355,26 +374,39 @@ public class ReadTag extends AppCompatActivity {
 //        t8.setText("ISC: " + ISC);
         PopulateGraphValue(Double.parseDouble(Vmax1), Double.parseDouble(IPMAx1), Double.parseDouble(VOC1), Double.parseDouble(ISC1));
 //        SetData(ID.substring(2));
-        for (int i = 0; i < modelList.size(); i++) {
-            if (ID.substring(2).matches(modelList.get(i).getId())) {
+//        for (int i = 0; i < modelList.size(); i++) {
+//            if (ID.substring(2).matches(modelList.get(i).getId())) {
+//
+//                Pvmanufacture = modelList.get(i).getPVMName();
+//                cellManufacture = modelList.get(i).getCellMName();
+//                PVMonth = modelList.get(i).getCellMName();
+//                CellMonth = modelList.get(i).getCellDate();
+//                PVcountry = modelList.get(i).getPVCountry();
+//                CellCountry = modelList.get(i).getCellCountry();
+//                Modelname = modelList.get(i).getPVModule();
+//                LAb = modelList.get(i).getIECLab();
+//                QualityCertificate = modelList.get(i).getCellCountry();
+//                t1.setText(Pvmanufacture);
+//                t2.setText(cellManufacture);
+//                t3.setText(PVMonth);
+//                t4.setText(CellMonth);
+//                t5.setText(QualityCertificate);
+//
+//            }
+//        }
 
-                Pvmanufacture = modelList.get(i).getPVMName();
-                cellManufacture = modelList.get(i).getCellMName();
-                PVMonth = modelList.get(i).getCellMName();
-                CellMonth = modelList.get(i).getCellDate();
-                PVcountry = modelList.get(i).getPVCountry();
-                CellCountry = modelList.get(i).getCellCountry();
-                Modelname = modelList.get(i).getPVModule();
-                LAb = modelList.get(i).getIECLab();
-                QualityCertificate = modelList.get(i).getCellCountry();
-                t1.setText(Pvmanufacture);
-                t2.setText(cellManufacture);
-                t3.setText(PVMonth);
-                t4.setText(CellMonth);
-                t5.setText(QualityCertificate);
-                Check();
-            }
+
+        paramter = toHex(vv);
+        try {
+            FetchData(SerialId);
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
+
+    }
+
+    public String toHex(String arg) {
+        return String.format("%x", new BigInteger(1, arg.getBytes()));
     }
 
     private void ParseXML() {
@@ -429,6 +461,7 @@ public class ReadTag extends AppCompatActivity {
     public void ReadData() {
         iuhfService.setOnReadListener(var1 -> {
             convertByteToHexadecimal(var1.getReadData());
+
         });
 
         iuhfService.inventory_start();
@@ -1088,6 +1121,9 @@ public class ReadTag extends AppCompatActivity {
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_F1) {//KeyEvent { action=ACTION_UP, keyCode=KEYCODE_F1, scanCode=59, metaState=0, flags=0x8, repeatCount=0, eventTime=13517236, downTime=13516959, deviceId=1, source=0x101 }
             ReadData();
+            dialog.setCancelable(false);
+            dialog.setMessage("Reading Data...");
+            dialog.show();
             return true;
         }
         return super.onKeyUp(keyCode, event);
@@ -1171,5 +1207,113 @@ public class ReadTag extends AppCompatActivity {
         }
 
     }
+
+    private void FetchData(String parameter) throws JSONException {
+
+        String url = "http://164.52.223.163:4502/api/GetbyId";
+        JSONObject obj = new JSONObject();
+        obj.put("serialNo", parameter);
+        obj.put("moduleId", parameter);
+        obj.put("formateid", "1");
+        RequestQueue queue = Volley.newRequestQueue(this);
+
+
+        final String requestBody = obj.toString();
+
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, url, response -> {
+
+            try {
+
+                JSONObject object = new JSONObject(response);
+                JSONObject technicleSettings_information = object.getJSONObject("technicleSettings_Information");
+
+                SerialNo = technicleSettings_information.getString("Serial number");
+                date = technicleSettings_information.getString("date");
+                time = technicleSettings_information.getString("time");
+                //PMAX DECODING
+                Pmaxnew = technicleSettings_information.getString("pmax");
+                FillFactor = technicleSettings_information.getString("Fill Factor");
+                //Voc DECODING
+                Voc = technicleSettings_information.getString("voc");
+                //ISC Decoding
+                Isc = (technicleSettings_information.getString("isc"));
+                //Vmp Decoding
+                Vmp = (technicleSettings_information.getString("vmp"));
+
+
+                //Imp Decoding
+
+
+                String Rs = technicleSettings_information.getString("rs");
+                String Rsh = technicleSettings_information.getString("rsh");
+                String CEff = technicleSettings_information.getString("C.Eff");
+                String MTemp = technicleSettings_information.getString("M.Temp");
+                String RefVoltage = technicleSettings_information.getString("refvoltage");
+                String RefCurent = technicleSettings_information.getString("RefCurent");
+                String RefPmax = technicleSettings_information.getString("refpmax");
+                String Irra = technicleSettings_information.getString("irra");
+                Binnumber = technicleSettings_information.getString("Bin number");
+
+
+                JSONObject companySettings = object.getJSONObject("companySettings_Information");
+
+
+                Sno = companySettings.getString("sno");
+                ModuleID = companySettings.getString("Module ID");
+                PVMdlNumber = companySettings.getString("PV Model Number");
+                CellMfgName = companySettings.getString("Cell Mfg Name");
+                CellMfgCuntry = companySettings.getString("Cell Mfg Cuntry");
+                CellMfgDate = companySettings.getString("Cell Mfg Date");
+                ModuleMfg = companySettings.getString("Module Mfg");
+                ModuleMfgCountry = companySettings.getString("Module Mfg Country");
+                ModuleMfgDate = companySettings.getString("Module Mfg Date");
+                IECLab = companySettings.getString("IEC Lab");
+                IECDate = companySettings.getString("IEC Date");
+
+                t1.setText(ModuleMfg);
+                t2.setText(CellMfgName);
+                t3.setText(ModuleMfgDate);
+                t4.setText(CellMfgDate);
+                t5.setText(IECLab);
+                ViewDetails.setVisibility(View.VISIBLE);
+                dialog.dismiss();
+                Check();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            Log.i("VOLLEY", response);
+//            dialog.dismiss();
+        }, error -> {
+//            Log.e("VOLLEY Negative", String.valueOf(error.networkResponse.statusCode));
+            Toast.makeText(ReadTag.this, "Not Found", Toast.LENGTH_SHORT).show();
+            dialog.dismiss();
+//            progressDialog.dismiss();
+
+        }) {
+            @Override
+            public String getBodyContentType() {
+                return "application/json; charset=utf-8";
+            }
+
+            @Override
+            public byte[] getBody() throws AuthFailureError {
+                try {
+                    return requestBody == null ? null : requestBody.getBytes("utf-8");
+                } catch (UnsupportedEncodingException uee) {
+                    VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", requestBody, "utf-8");
+                    return null;
+                }
+            }
+
+            @Override
+            protected Response<String> parseNetworkResponse(NetworkResponse response) {
+
+                return super.parseNetworkResponse(response);
+            }
+        };
+
+        queue.add(stringRequest);
+    }
+
 
 }
