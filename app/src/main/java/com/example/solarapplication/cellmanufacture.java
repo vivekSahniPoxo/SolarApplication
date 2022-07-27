@@ -32,32 +32,53 @@ public class cellmanufacture extends Fragment {
         cellName = v.findViewById(R.id.CellName);
         recyclerView = v.findViewById(R.id.Recyclerview_cell);
         saveBtn = v.findViewById(R.id.BtnSaveCell);
-        list=new ArrayList<>();
-       SetRecyclerview();
+        list = new ArrayList<>();
+        SetRecyclerview();
 
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                cellDb.addContact(new CellModel(cellName.getText().toString().trim()));
-                cellName.setText("");
-                SetRecyclerview();
+                cellDb = new CellDb(getContext());
+                List<CellModel> list = new ArrayList<>();
+                list = cellDb.getAllContacts();
+
+                String val = cellName.getText().toString().trim();
+                List<String> list1 = new ArrayList<>();
+
+                for (int i = 0; i < list.size(); i++) {
+                    list1.add(list.get(i).getCellManufacture());
+                }
+                //                boolean ans = list.contains(val);
+                if (val.length() > 0) {
+                    if (!list1.contains(val)) {
+                        cellDb.addContact(new CellModel(cellName.getText().toString().trim()));
+                        cellName.setText("");
+                        SetRecyclerview();
+                    } else {
+                        cellName.setText("");
+                        Toast.makeText(getContext(), "already Register...", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    cellName.setError("Enter Cell Name...");
+                }
             }
         });
         return v;
     }
 
     private void SetRecyclerview() {
-        cellDb=new CellDb(getContext());
+        cellDb = new CellDb(getContext());
         list = cellDb.getAllContacts();
         //Setting Data in List
-        if (list.size()>0) {
+        if (list.size() > 0) {
             adapterCell = new AdapterCell(list, getActivity());
             recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
             recyclerView.setAdapter(adapterCell);
             adapterCell.notifyDataSetChanged();
-        }
-        else {
+        } else {
             Toast.makeText(getContext(), "No Data Available...", Toast.LENGTH_SHORT).show();
         }
     }
+
+   
 }

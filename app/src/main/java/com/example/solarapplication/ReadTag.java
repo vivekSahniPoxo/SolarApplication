@@ -103,6 +103,7 @@ public class ReadTag extends AppCompatActivity {
     List<XmlModel> modelList;
     public TextView t1, t2, t3, t4, t5, t6;
 
+    String epcv;
     ProgressDialog dialog;
 
     @Override
@@ -143,10 +144,19 @@ public class ReadTag extends AppCompatActivity {
         cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ReadData();
-                dialog.setCancelable(false);
-                dialog.setMessage("Reading Data...");
-                dialog.show();
+
+                epcv = null;
+                epcv = iuhfService.read_area(1, "2", "6", "00000000");
+
+                if ((epcv != null)) {
+                    if (epcv.endsWith("EE")) {
+                        Toast.makeText(ReadTag.this, "Wrong Data....", Toast.LENGTH_SHORT).show();
+                    } else {
+                        ReadData();
+                    }
+                } else {
+                    Toast.makeText(ReadTag.this, "Please Carry Tag...", Toast.LENGTH_SHORT).show();
+                }
 //                UpdateExcel();
             }
         });
@@ -326,7 +336,12 @@ public class ReadTag extends AppCompatActivity {
             hex += String.format("%02X", i);
         }
 //        System.out.print(hex);
-        SetDAta(hex);
+        if (hex.endsWith("EE")) {
+            Toast.makeText(ReadTag.this, "Wrong Data....", Toast.LENGTH_SHORT).show();
+        } else {
+            SetDAta(hex);
+        }
+
 //        SetDAta("00000000000000000000000000000032323431303936350003504839020898000774715095800000000000000000000000000000000000000000000000000000");
         System.out.print("VALUE OF DATA " + hex);
 
@@ -372,9 +387,28 @@ public class ReadTag extends AppCompatActivity {
         String C = hex.substring(73, 75);
         ISC1 = IS + "." + C;
 //        t8.setText("ISC: " + ISC);
-        PopulateGraphValue(Double.parseDouble(Vmax1), Double.parseDouble(IPMAx1), Double.parseDouble(VOC1), Double.parseDouble(ISC1));
+
+        if (Vmax1.matches("[a-zA-Z]+") && IPMAx1.matches("[a-zA-Z]+") && VOC1.matches("[a-zA-Z]+") && ISC1.matches("[a-zA-Z]+")) {
+
+            Toast.makeText(ReadTag.this, "Tag Data is not Correct...", Toast.LENGTH_SHORT).show();
+
+        } else if (Vmax1.equals("0.00") && IPMAx1.equals("0.00") && VOC1.equals("0.00") && ISC1.equals("0.00")) {
+
+            Toast.makeText(ReadTag.this, "Tag Data is not Correct...", Toast.LENGTH_SHORT).show();
+        } else {
+            PopulateGraphValue(Double.parseDouble(Vmax1), Double.parseDouble(IPMAx1), Double.parseDouble(VOC1), Double.parseDouble(ISC1));
+            paramter = toHex(vv);
+            try {
+                FetchData(SerialId);
+                dialog.setCancelable(false);
+                dialog.setMessage("Reading Data...");
+                dialog.show();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
 //        SetData(ID.substring(2));
-//        for (int i = 0; i < modelList.size(); i++) {
+//        for (int i = 0; i < modelList.size(); i++) {=-0okm
 //            if (ID.substring(2).matches(modelList.get(i).getId())) {
 //
 //                Pvmanufacture = modelList.get(i).getPVMName();
@@ -395,13 +429,6 @@ public class ReadTag extends AppCompatActivity {
 //            }
 //        }
 
-
-        paramter = toHex(vv);
-        try {
-            FetchData(SerialId);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
 
     }
 
@@ -460,6 +487,8 @@ public class ReadTag extends AppCompatActivity {
     //Read RFID TAg
     public void ReadData() {
         iuhfService.setOnReadListener(var1 -> {
+
+
             convertByteToHexadecimal(var1.getReadData());
 
         });
@@ -498,6 +527,7 @@ public class ReadTag extends AppCompatActivity {
 
 
         }
+
 
         this.V10 = Voc;
         this.C10 = 0.00;
@@ -567,6 +597,7 @@ public class ReadTag extends AppCompatActivity {
             }
         });
         lineSeries.setThickness(8);
+
 
     }
 
@@ -1120,10 +1151,18 @@ public class ReadTag extends AppCompatActivity {
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_F1) {//KeyEvent { action=ACTION_UP, keyCode=KEYCODE_F1, scanCode=59, metaState=0, flags=0x8, repeatCount=0, eventTime=13517236, downTime=13516959, deviceId=1, source=0x101 }
-            ReadData();
-            dialog.setCancelable(false);
-            dialog.setMessage("Reading Data...");
-            dialog.show();
+            epcv = iuhfService.read_area(1, "2", "6", "00000000");
+
+            if ((epcv != null)) {
+                if (epcv.endsWith("EE")) {
+                    Toast.makeText(ReadTag.this, "Wrong Data....", Toast.LENGTH_SHORT).show();
+                } else {
+                    ReadData();
+
+                }
+            } else {
+                Toast.makeText(ReadTag.this, "Please Carry Tag...", Toast.LENGTH_SHORT).show();
+            }
             return true;
         }
         return super.onKeyUp(keyCode, event);

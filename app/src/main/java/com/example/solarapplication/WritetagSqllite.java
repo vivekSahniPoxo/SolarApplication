@@ -140,7 +140,6 @@ public class WritetagSqllite extends AppCompatActivity implements View.OnClickLi
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 dbparameter = parent.getItemAtPosition(position).toString();
 
-
             }
 
             @Override

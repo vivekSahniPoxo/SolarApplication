@@ -40,9 +40,33 @@ List<ModuleDetailsModel> list;
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                moduleDB.addContact(new ModuleDetailsModel(ModuleNametext.getText().toString().trim()));
-                ModuleNametext.setText("");
-                SetupRecycler();
+
+
+                List<String> temp = new ArrayList<>();
+                list = moduleDB.getAllContacts();
+                for (int i = 0; i < list.size(); i++) {
+                    temp.add(list.get(i).getModuleName());
+                }
+
+                String var = ModuleNametext.getText().toString().trim();
+
+                if (var.length() > 0) {
+                    if (!temp.contains(var)) {
+                        moduleDB.addContact(new ModuleDetailsModel(var));
+                        ModuleNametext.setText("");
+                        SetupRecycler();
+                    } else {
+                        ModuleNametext.setText("");
+                        Toast.makeText(getContext(), "already Register...", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    ModuleNametext.setError("Enter Name...");
+
+                }
+
+//                moduleDB.addContact(new ModuleDetailsModel(ModuleNametext.getText().toString().trim()));
+//                ModuleNametext.setText("");
+//                SetupRecycler();
             }
         });
 

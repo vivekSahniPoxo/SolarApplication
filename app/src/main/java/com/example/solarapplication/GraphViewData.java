@@ -61,7 +61,7 @@ public class GraphViewData extends AppCompatActivity {
     int pageHeight = 2200;
     int pagewidth = 1800;
     Bitmap bmp, scaledbmp1;
-String SerialId="",paramter;
+    String SerialId = "", paramter;
     String FF, pmax1, Vmax1, IPMAx1, VOC1, ID, ISC1, TagId, Pvmanufacture, cellManufacture, PVMonth, CellMonth, PVcountry, CellCountry, QualityCertificate, LAb, Modelname;
     Double V1, V2, V3, V4, V5, V6, V7, V8, V9, V10, C1, C2, C3, C10, C4, C5, C6, C7, C8, C9;
     IUHFService iuhfService;
@@ -71,6 +71,7 @@ String SerialId="",paramter;
     ProgressDialog dialog;
     String sno, ModuleID, PVMdlNumber, CellMfgName, CellMfgCuntry, CellMfgDate, ModuleMfg, ModuleMfgCountry, ModuleMfgDate, IECLab, IECDate;
     public TextView t1, t2, t3, t4, t5;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,13 +86,14 @@ String SerialId="",paramter;
         t3 = findViewById(R.id.MonthPV);
         t4 = findViewById(R.id.MonthSolar);
         t5 = findViewById(R.id.IECcertificate);
-dialog=new ProgressDialog(this);
+        dialog = new ProgressDialog(this);
 
         iuhfService.inventoryStart();
         iuhfService.setOnInventoryListener(new OnSpdInventoryListener() {
             @Override
             public void getInventoryData(SpdInventoryData var1) {
                 TagId = var1.getEpc();
+
             }
         });
         PdfGenerate = findViewById(R.id.GeneratePDF);
@@ -114,10 +116,23 @@ dialog=new ProgressDialog(this);
         scanread.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ReadData();
-                dialog.setCancelable(false);
-                dialog.setMessage("Reading Data...");
-                dialog.show();
+                final String[] epcv = new String[1];
+                iuhfService.setOnInventoryListener(new OnSpdInventoryListener() {
+                    @Override
+                    public void getInventoryData(SpdInventoryData var1) {
+                        epcv[0] = var1.getEpc();
+                    }
+                });
+                if ((epcv[0] != null)) {
+                    ReadData();
+                    epcv[0] =null;
+                    dialog.setCancelable(false);
+                    dialog.setMessage("Reading Data...");
+                    dialog.show();
+                } else {
+                    Toast.makeText(GraphViewData
+                            .this, "Please Carry Tag...", Toast.LENGTH_SHORT).show();
+                }
 
             }
         });
@@ -896,7 +911,7 @@ dialog=new ProgressDialog(this);
                 JSONObject companySettings = object.getJSONObject("companySettings_Information");
 
 
-                 sno = companySettings.getString("sno");
+                sno = companySettings.getString("sno");
                 ModuleID = companySettings.getString("Module ID");
                 PVMdlNumber = companySettings.getString("PV Model Number");
                 CellMfgName = companySettings.getString("Cell Mfg Name");
@@ -951,12 +966,26 @@ dialog=new ProgressDialog(this);
 
         queue.add(stringRequest);
     }
+
     public boolean onKeyUp(int keyCode, KeyEvent event) {
+
         if (keyCode == KeyEvent.KEYCODE_F1) {//KeyEvent { action=ACTION_UP, keyCode=KEYCODE_F1, scanCode=59, metaState=0, flags=0x8, repeatCount=0, eventTime=13517236, downTime=13516959, deviceId=1, source=0x101 }
-            ReadData();
-            dialog.setCancelable(false);
-            dialog.setMessage("Reading Data...");
-            dialog.show();
+            final String[] epcv = new String[1];
+            iuhfService.setOnInventoryListener(new OnSpdInventoryListener() {
+                @Override
+                public void getInventoryData(SpdInventoryData var1) {
+                    epcv[0] = var1.getEpc();
+                }
+            });
+            if ((epcv[0] != null)) {
+                ReadData();
+                epcv[0] =null;
+                dialog.setCancelable(false);
+                dialog.setMessage("Reading Data...");
+                dialog.show();
+            } else {
+                Toast.makeText(GraphViewData.this, "Please Carry Tag...", Toast.LENGTH_SHORT).show();
+            }
             return true;
         }
         return super.onKeyUp(keyCode, event);

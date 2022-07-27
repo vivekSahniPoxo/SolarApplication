@@ -63,6 +63,8 @@ public class WriteTag extends AppCompatActivity implements View.OnClickListener 
     TextView pvmanutxt, cellmanutxt, pvdatetxt, celldatetxt, cellcountrytxt, pvcoiuntrytxt, labnametxt, labdatetxt, pmaxtxt, imaxtxt, voctxt,
             modeltxt, isctxt, fftxt, vmaxtxt, serialnotxt;
 
+    String epcv;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -100,7 +102,6 @@ public class WriteTag extends AppCompatActivity implements View.OnClickListener 
         voctxt = findViewById(R.id.Voc);
 
 
-
     }
 
     @Override
@@ -126,12 +127,25 @@ public class WriteTag extends AppCompatActivity implements View.OnClickListener 
                 break;
             case R.id.Search_Data:
                 try {
+                    epcv = null;
+//                    iuhfService.setOnInventoryListener(new OnSpdInventoryListener() {
+//                        @Override
+//                        public void getInventoryData(SpdInventoryData var1) {
+//                            epcv = var1.getEpc();
+//                        }
+//                    });
+                    epcv = iuhfService.read_area(1, "2", "6", "00000000");
 
-                    FetchData(SerialInput.getText().toString().trim());
-                    progressDialog.setCancelable(false);
-                    progressDialog.setMessage("Please wait While Writing Data...");
-                    progressDialog.show();
-                    SerialInput.setText("");
+                    if ((epcv != null)) {
+                        FetchData(SerialInput.getText().toString().trim());
+                        progressDialog.setCancelable(false);
+                        progressDialog.setMessage("Please wait While Writing Data...");
+                        progressDialog.show();
+                        SerialInput.setText("");
+                    } else {
+                        SerialInput.setText("");
+                        Toast.makeText(WriteTag.this, "Please Carry Tag...", Toast.LENGTH_SHORT).show();
+                    }
 
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -224,6 +238,7 @@ public class WriteTag extends AppCompatActivity implements View.OnClickListener 
     public void ErrorCode(int ErrorCode) {
         switch (ErrorCode) {
             case 0:
+
                 progressDialog.dismiss();
                 Toast.makeText(WriteTag.this, "Writing Successfully...", Toast.LENGTH_SHORT).show();
                 break;
@@ -303,15 +318,8 @@ public class WriteTag extends AppCompatActivity implements View.OnClickListener 
 
 
                 NEWDATA(SerialNo.trim(), Pmaxnew.trim(), Vmp.trim(), Imp.trim(), FillFactor.trim(), Voc.trim(), Isc.trim());
-//                String FilterData = PMAX.concat(VMP.concat(IMP.concat(FF.concat(VOC).concat(ISC))));
 
 
-//                FormattedData = FilterData.replace(" ", "");
-//                Toast.makeText(WriteTag.this, "" + FormattedData, Toast.LENGTH_SHORT).show();
-////                PopulateGraphValue( Double.parseDouble(Vmp.trim()),
-////                        Double.parseDouble(Imp.trim()),
-////                        Double.parseDouble(Voc.trim()),
-////                        Double.parseDouble(Isc.trim()));
                 JSONObject companySettings = object.getJSONObject("companySettings_Information");
 
 
@@ -336,8 +344,6 @@ public class WriteTag extends AppCompatActivity implements View.OnClickListener 
                 pvcoiuntrytxt.setText(ModuleMfgCountry);
                 cellcountrytxt.setText(CellMfgCuntry);
                 modeltxt.setText(Binnumber);
-                SerialInput.setText(ModuleID);
-
 
                 fftxt.setText(FillFactor);
                 vmaxtxt.setText(Vmp);
@@ -345,7 +351,6 @@ public class WriteTag extends AppCompatActivity implements View.OnClickListener 
                 voctxt.setText(Voc);
                 pmaxtxt.setText(Pmaxnew);
                 imaxtxt.setText(Imp);
-
 
 //                writeDataModel = new WriteDataModel(SerialNo, date, time, Pmaxnew, FillFactor, Voc, Isc, Vmp, Imp, Sno, ModuleID, PVMdlNumber, CellMfgName, CellMfgCuntry, CellMfgDate, ModuleMfg, ModuleMfgCountry, ModuleMfgDate, IECLab, IECDate);
                 dataModelList.add(new WriteDataModel(SerialNo, date, time, Pmaxnew, FillFactor, Voc, Isc, Vmp, Imp, Sno, ModuleID, PVMdlNumber, CellMfgName, CellMfgCuntry, CellMfgDate, ModuleMfg, ModuleMfgCountry, ModuleMfgDate, IECLab, IECDate));
@@ -545,7 +550,7 @@ public class WriteTag extends AppCompatActivity implements View.OnClickListener 
     }
 
     public void DataFormatting(String lemn, String formattedData) {
-        String NewID = "000"+ formattedData;
+        String NewID = "000" + formattedData;
 //        char[] chars1 = Hex.encodeHex(NewID.getBytes(StandardCharsets.UTF_8));
         String FinalDATA = lemn.concat(String.valueOf(NewID).concat("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"));
         System.out.print("VALUE WITH ID" + FinalDATA);
@@ -588,6 +593,7 @@ public class WriteTag extends AppCompatActivity implements View.OnClickListener 
         System.out.print("Value" + readArea);
         ErrorCode(readArea);
         Check();
+
     }
 
     public void Check() {

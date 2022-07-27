@@ -102,7 +102,7 @@ public class ConfigureForm extends AppCompatActivity implements ReportListener {
                     .setCancelable(false)
                     .setPositiveButton("Delete", (dialogBox, id) -> {
                         reportDb.deleteRow(updateId);
-                        Toast.makeText(getApplicationContext(), "Delete... " + idvalue, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(), "Delete  " + idvalue, Toast.LENGTH_SHORT).show();
                         dialogBox.dismiss();
                         SetupRecycler();
                     })
@@ -186,7 +186,9 @@ public class ConfigureForm extends AppCompatActivity implements ReportListener {
     }
 
     private void SetupSpinnerModuleName() {
-        String[] value = new String[]{"1 Years", "2 Years", "3 Years", "4 Years", "5 Years"};
+        String[] value = new String[]{"1 Years", "2 Years", "3 Years", "4 Years", "5 Years", "6 Years", "7 Years", "8 Years", "9 Years", "9 Years", "10 Years", "11 Years", "12 Years", "13 Years", "14 Years", "15 Years", "16 Years", "17 Years", "18 Years", "19 Years", "20 Years", "21 Years", "22 Years", "23 Years", "24 Years", "25 Years", "26 Years", "27 Years", "28 Years", "29 Years", "30 Years"};
+
+
         final ArrayAdapter<String> spinnerArrayAdapterwarranty = new ArrayAdapter<String>(this, R.layout.support_simple_spinner_dropdown_item, value);
         spinnerArrayAdapterwarranty.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
         wrannty.setAdapter(spinnerArrayAdapterwarranty);
@@ -509,7 +511,7 @@ public class ConfigureForm extends AppCompatActivity implements ReportListener {
                 .setPositiveButton("Yes", (dialog, which) -> {
                     reportDb.deleteRow(DeleteId);
                     adapter.notifyDataSetChanged();
-                    Toast.makeText(ConfigureForm.this, "Deleted" + DeleteId, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ConfigureForm.this, "Deleted item ID" + DeleteId, Toast.LENGTH_SHORT).show();
                 })
                 .setNegativeButton("No", (dialog, which) -> {
                     adapter.restoreItem(item, position);

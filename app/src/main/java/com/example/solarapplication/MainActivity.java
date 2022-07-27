@@ -7,7 +7,7 @@ import android.view.View;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity {
     CardView Readtag, Writetag, Configure, Setting;
 
     @Override
@@ -18,30 +18,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Writetag = findViewById(R.id.Write_tab);
         Configure = findViewById(R.id.Configure_Tab);
         Setting = findViewById(R.id.Setting_tab);
-        Readtag.setOnClickListener(this);
-        Writetag.setOnClickListener(this);
-        Configure.setOnClickListener(this);
-        Setting.setOnClickListener(this);
-
-
-    }
-
-    @Override
-    public void onClick(View v) {
-        CardView b = (CardView) v;
-        switch (b.getId()) {
-            case R.id.Read_tab:
+        Readtag.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
                 startActivity(new Intent(MainActivity.this, ReadTag.class));
-                break;
-            case R.id.Write_tab:
+            }
+        });
+        Writetag.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
                 startActivity(new Intent(MainActivity.this, WriteTag.class));
-                break;
-            case R.id.Configure_Tab:
+            }
+        });
+        Configure.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
                 startActivity(new Intent(MainActivity.this, ConfigureForm.class));
-                break;
-            case R.id.Setting_tab:
+            }
+        });
+        Setting.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
                 startActivity(new Intent(MainActivity.this, SettingActivity.class));
-                break;
-        }
+            }
+        });
+
+
     }
+
+
 }

@@ -51,9 +51,37 @@ public class NotificationsFragment extends Fragment {
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                localDB.addContact(new LabModel(DateValue.toString().trim(), certificatename.getText().toString().trim()));
-                certificatename.setText("");
-                SetRecyclerview();
+
+
+                List<String> temp = new ArrayList<>();
+                list = localDB.getAllContacts();
+                for (int i = 0; i < list.size(); i++) {
+                    temp.add(list.get(i).getName());
+                }
+
+                String var = certificatename.getText().toString().trim();
+
+                if (var.length() > 0) {
+                    if (DateValue != null) {
+                        if (!temp.contains(var)) {
+                            localDB.addContact(new LabModel(DateValue, var));
+                            certificatename.setText("");
+                            SetRecyclerview();
+                        } else {
+                            certificatename.setText("");
+                            Toast.makeText(getContext(), "already Register...", Toast.LENGTH_SHORT).show();
+                        }
+                    }else {
+                        Toast.makeText(getContext(), "Choose Date...", Toast.LENGTH_SHORT).show();
+
+                    }
+
+                } else {
+                    certificatename.setError("Enter Name...");
+                }
+//                localDB.addContact(new LabModel(DateValue.toString().trim(), certificatename.getText().toString().trim()));
+//                certificatename.setText("");
+//                SetRecyclerview();
             }
         });
 

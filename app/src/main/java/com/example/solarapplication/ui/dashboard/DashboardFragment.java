@@ -27,7 +27,7 @@ public class DashboardFragment extends Fragment {
     Button btnSave;
     LocalDbManufactue localDB;
     List<ManufactureModel> list;
-    AdapterManufactureName  adapterManufactureName;
+    AdapterManufactureName adapterManufactureName;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -43,9 +43,31 @@ public class DashboardFragment extends Fragment {
         //Getting Local DB Data in List
 
         btnSave.setOnClickListener(v -> {
-            localDB.addManufacture(new ManufactureModel(ManufactureName.getText().toString().trim()));
-            ManufactureName.setText("");
-            SetupRecyclerview();
+            List<String> temp = new ArrayList<>();
+            list = localDB.getallManufactureName();
+            for (int i = 0; i < list.size(); i++) {
+                temp.add(list.get(i).getManufactureName());
+            }
+
+            String var = ManufactureName.getText().toString().trim();
+
+            if (var.length() > 0) {
+                if (!temp.contains(var)) {
+                    localDB.addManufacture(new ManufactureModel(var));
+                    ManufactureName.setText("");
+                    SetupRecyclerview();
+                } else {
+                    ManufactureName.setText("");
+                    Toast.makeText(getContext(), "already Register...", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                ManufactureName.setError("Enter Name...");
+            }
+
+
+//            localDB.addManufacture(new ManufactureModel(ManufactureName.getText().toString().trim()));
+//            ManufactureName.setText("");
+//            SetupRecyclerview();
         });
 
 
@@ -55,13 +77,12 @@ public class DashboardFragment extends Fragment {
     private void SetupRecyclerview() {
         list = localDB.getallManufactureName();
         //Setting Data in List
-        if (list.size()>0) {
+        if (list.size() > 0) {
             adapterManufactureName = new AdapterManufactureName(list, getActivity());
             recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
             recyclerView.setAdapter(adapterManufactureName);
             adapterManufactureName.notifyDataSetChanged();
-        }
-        else {
+        } else {
             Toast.makeText(getContext(), "No Data Available...", Toast.LENGTH_SHORT).show();
         }
     }

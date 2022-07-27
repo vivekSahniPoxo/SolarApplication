@@ -43,18 +43,35 @@ public class HomeFragment extends Fragment {
         SetupRecycelerview();
 
         btnSave.setOnClickListener(v -> {
-            localDB.addContact(new DataModelClass(Country.getText().toString().trim()));
-            Country.setText("");
-            SetupRecycelerview();
+            List<String> temp = new ArrayList<>();
+            list = localDB.getAllContacts();
+            for (int i = 0; i < list.size(); i++) {
+                temp.add(list.get(i).getCountryName());
+            }
+
+            String var = Country.getText().toString().trim();
+
+            if (var.length() > 0) {
+                if (!temp.contains(var)) {
+                    localDB.addContact(new DataModelClass(var));
+                    Country.setText("");
+                    SetupRecycelerview();
+                } else {
+                    Country.setText("");
+                    Toast.makeText(getContext(), "already Register...", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Country.setError("Enter Country Name...");
+            }
+
 
         });
         return root;
     }
 
     private void SetupRecycelerview() {
-        //Getting Local DB Data in List
-        list = localDB.getAllContacts();
         //Setting Data in List
+        list = localDB.getAllContacts();
         if (list.size() > 0) {
             adapterCountry = new AdapterCountry(list, getActivity());
             recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
